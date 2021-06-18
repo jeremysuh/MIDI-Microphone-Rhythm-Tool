@@ -27,6 +27,7 @@ function MidiMicrophoneTool() {
             <h1>{"MIDI & Microphone Rhythm Practice"}</h1>
             <MidiPanel />
             <AudioRecorder />
+            <div>{`Status: ${activated ? "Running" : "Stopped"}`}</div>
             <button onClick={() => onStart()}>Start</button>
             <button onClick={() => onStop()}>Stop</button>
         </div>
