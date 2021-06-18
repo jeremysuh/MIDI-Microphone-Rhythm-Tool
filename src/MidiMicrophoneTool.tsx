@@ -1,7 +1,5 @@
-import React from "react";
 import { useState } from "react";
 import "./MidiMicrophoneTool.css";
-var MidiPlayer = require("midi-player-js");
 
 const MidiPanel = () => {
     return <div>Midi Panel</div>;
