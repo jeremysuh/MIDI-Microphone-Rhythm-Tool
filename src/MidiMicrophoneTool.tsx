@@ -4,20 +4,21 @@ import "./MidiMicrophoneTool.css";
 import MidiPlayer from "midi-player-js";
 import Soundfont from "soundfont-player";
 
-const MidiPanel = () => {
-    return <div>Midi Panel</div>;
-};
+// const MidiPanel = () => {
+//     return <div>Midi Panel</div>;
+// };
 
-const AudioRecorder = () => {
-    return <div>Audio Recorder</div>;
-};
+// const AudioRecorder = () => {
+//     return <div>Audio Recorder</div>;
+// };
 
 function MidiMicrophoneTool() {
-    const [activated, setActivated] = useState<boolean>(false);
-    const [midiUri, setMidiUri] = useState<string | null>(null);
-    const [soundFontLoaded, setSoundFontLoaded] = useState<boolean>(false);
     //const [midiArrayBuffer, setMidiArrayBuffer] = useState<ArrayBuffer | null>(null);
     //const [midiJSON, setMidiJSON] = useState<MidiJSON | null>(null);
+
+    const [midiUri, setMidiUri] = useState<string | null>(null);
+    const [soundFontLoaded, setSoundFontLoaded] = useState<boolean>(false);
+
     const fileReader = useRef<FileReader>(new FileReader());
     const ac = useRef<AudioContext>(new AudioContext());
 
@@ -26,11 +27,14 @@ function MidiMicrophoneTool() {
 
     const mediaStream = useRef<MediaStream | null>(null);
     const mediaRecorder = useRef<MediaRecorder | null>(null);
-    const [microphoneAccess, setMicrophoneAccess] = useState<boolean>(false);
-    const [recording, setRecording] = useState<boolean>(false);
+    const [hasMicrophoneAccess, setHasMicrophoneAccess] = useState<boolean>(false);
+    const [isRecording, setIsRecording] = useState<boolean>(false);
+    const [isPreviewPlaying, setIsPreviewPlaying] = useState<boolean>(false);
 
     const [audioSrc, setAudioSrc] = useState<string | null>(null);
     const chunks = useRef<Blob[]>([]);
+
+    const audioRef = useRef<HTMLAudioElement>(null); //change legacy ref later
 
     const allowMicrophoneAccess = () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -47,7 +51,7 @@ function MidiMicrophoneTool() {
                     mediaStream.current = stream;
                     const recorder = new MediaRecorder(stream);
                     recorder.onstart = function (e) {
-                        setRecording(true);
+                        setIsRecording(true);
                     };
                     recorder.ondataavailable = function (e: BlobEvent) {
                         //chunks.push(e.data);
@@ -60,11 +64,10 @@ function MidiMicrophoneTool() {
                         chunks.current = [];
                         const audioURL = window.URL.createObjectURL(blob);
                         setAudioSrc(audioURL);
-                        setRecording(false); //<-not on startrecord function; file delay
+                        setIsRecording(false);
                     };
                     mediaRecorder.current = recorder;
-
-                    setMicrophoneAccess(true);
+                    setHasMicrophoneAccess(true);
                 })
 
                 // Error callback
@@ -101,44 +104,12 @@ function MidiMicrophoneTool() {
         fileReader.current.onload = () => {
             const result: string | ArrayBuffer | null = fileReader.current.result;
             if (result === null) return;
-            if (typeof result === "string") setMidiUri(result);
+            if (typeof result === "string") {
+                setMidiUri(result);
+                setAudioSrc(null); //reset the audio src
+            }
         };
     }, []);
-
-    const recordStart = () => {
-        if (recording || mediaRecorder.current === null) return;
-        mediaRecorder.current.start();
-        console.log(mediaRecorder.current.state);
-        console.log("recorder started");
-    };
-
-    const recordStop = () => {
-        if (!recording || mediaRecorder.current === null) return;
-        mediaRecorder.current.stop();
-        console.log(mediaRecorder.current.state);
-        console.log("recorder stopped");
-    };
-
-    const onStart = () => {
-        if (player.current.isPlaying()) return;
-        setActivated(true);
-        player.current.play();
-        console.log("start");
-    };
-
-    const onPause = () => {
-        if (player.current.isPlaying() === false) return;
-        setActivated(false);
-        player.current.pause();
-        console.log("pause");
-    };
-
-    const onStop = () => {
-        if (player.current.isPlaying() === false) return;
-        setActivated(false);
-        player.current.stop();
-        console.log("stop");
-    };
 
     const readMidiUri = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files === null) return;
@@ -153,48 +124,95 @@ function MidiMicrophoneTool() {
             return;
         }
 
-        fileReader.current.readAsDataURL(file); //triggers onload function
-        //fileReader.current.readAsArrayBuffer(file);
-        //fileReader.current.readAsText(file);
+        fileReader.current.readAsDataURL(file);
     };
+
+    const startRecording = () => {
+        if (isRecording || mediaRecorder.current === null) return;
+        mediaRecorder.current.start();
+        console.log(mediaRecorder.current.state);
+        player.current.play();
+    };
+
+    const stopRecording = () => {
+        if (!isRecording || mediaRecorder.current === null) return;
+        mediaRecorder.current.stop();
+        console.log(mediaRecorder.current.state);
+        player.current.stop();
+    };
+
+    const playPreview = () => {
+        if (audioRef.current === null) return;
+        if (player.current.isPlaying()) return;
+        audioRef.current.play();
+        audioRef.current.addEventListener("ended", stopPreview);
+        player.current.play();
+        setIsPreviewPlaying(true);
+    };
+
+    const pausePreview = () => {
+        if (audioRef.current === null) return;
+        if (!player.current.isPlaying()) return;
+        audioRef.current.pause();
+        player.current.pause();
+        setIsPreviewPlaying(false);
+    };
+
+    const stopPreview = () => {
+        if (audioRef.current === null) return;
+        if (!player.current.isPlaying()) return;
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.removeEventListener("ended", stopPreview);
+        player.current.stop();
+        setIsPreviewPlaying(false);
+    };
+
+    const midiLoaded = midiUri !== null;
+    const disablePreview = !midiLoaded || isRecording || audioSrc === null;
 
     return (
         <div className="App">
             <h1>{"MIDI & Microphone Rhythm Practice"}</h1>
-            <input type="file" accept="audio/midi, audio/mid" onChange={(event) => readMidiUri(event)} disabled={!soundFontLoaded}></input>
-            <MidiPanel />
-            <AudioRecorder />
-            <div>{`Status: ${activated ? "Running" : "Stopped"}`}</div>
-            <button onClick={() => onStart()} disabled={midiUri === null}>
-                Start
+            <input
+                type="file"
+                accept="audio/midi, audio/mid"
+                onChange={(event) => readMidiUri(event)}
+                disabled={!soundFontLoaded || isRecording || isPreviewPlaying}
+            ></input>
+            <br />
+            <br />
+            <button onClick={() => allowMicrophoneAccess()} disabled={hasMicrophoneAccess}>
+                Allow Microphone Access
             </button>
-            <button onClick={() => onPause()} disabled={midiUri === null}>
-                Pause
+            <br />
+            <br />
+            <button onClick={() => startRecording()} disabled={!midiLoaded || isRecording}>
+                Record Start
             </button>
-            <button onClick={() => onStop()} disabled={midiUri === null}>
-                Stop
+            <button onClick={() => stopRecording()} disabled={!midiLoaded || !isRecording}>
+                Record Stop
             </button>
+            <br />
+            <br />
+            <button onClick={() => playPreview()} disabled={disablePreview}>
+                Play Preview
+            </button>
+            <button onClick={() => pausePreview()} disabled={disablePreview}>
+                Pause Preview
+            </button>
+            <button onClick={() => stopPreview()} disabled={disablePreview}>
+                Stop Preview
+            </button>
+            <br />
+            <br />
             <div>
-                <button onClick={() => allowMicrophoneAccess()} disabled={microphoneAccess}>
-                    Allow Microphone Access
-                </button>
-                <button disabled={!microphoneAccess} onClick={() => recordStart()}>
-                    Record
-                </button>
-                <button disabled={!microphoneAccess} onClick={() => recordStop()}>
-                    Stop
-                </button>
-            </div>
-            <div>
-                {audioSrc && !recording ? (
-                    <audio controls>
+                {audioSrc && !isRecording ? (
+                    <audio controls ref={audioRef}>
                         <source src={audioSrc as string} type="audio/ogg" />
                     </audio>
                 ) : null}
             </div>
-            {/* <div style={{ textAlign: "center", borderStyle: "solid", margin: "1em", maxWidth: "85%" }}>
-                {midiJSON === null ? "No MIDI file selected" : JSON.stringify(midiJSON)}
-            </div> */}
         </div>
     );
 }
