@@ -7,6 +7,8 @@ import { Range } from "rc-slider";
 import 'rc-slider/assets/index.css'
 //import MidiPlayerJS from "midi-player-js";
 import * as MidiPlayerJS from './midi-player-js/player';
+import { useAnimationFrame } from './CustomHooks'
+
 
 type MidiInformation = {
     totalLength: number;
@@ -41,7 +43,7 @@ function MidiMicrophoneTool() {
 
     const audioRef = useRef<HTMLAudioElement>(null); //change legacy ref later
 
-
+    const [pointer, setPointer] = useState<number>(0);
 
     const [midiInformation, setMidiInformation] = useState<MidiInformation>({
         totalLength: 0,
@@ -177,6 +179,14 @@ function MidiMicrophoneTool() {
         fileReader.current.readAsDataURL(file);
     };
 
+    useAnimationFrame((deltaTime: number) => {
+        // Pass on a function to the setter of the state
+        // to make sure we always have the latest state
+        setPointer((prev) => prev + deltaTime/1000);
+        console.log(deltaTime)
+        //setCount(prevCount => (prevCount + deltaTime * 0.01) % 100)
+      })
+
     const startRecording = () => {
         if (isRecording || mediaRecorder.current === null) return;
         mediaRecorder.current.start();
@@ -276,6 +286,7 @@ function MidiMicrophoneTool() {
                 Stop Preview
             </button>
             <br />
+            <div style={{}}>{pointer.toFixed(2)} seconds</div>
             <br />
             <div>
                 {/* might have to change this approach as buffering issues are causing delay/problems in Chrome */}
