@@ -251,7 +251,7 @@ function MidiMicrophoneTool() {
                     min={0}
                     max={midiInformation.totalLength}
                     value={[config.startTime, midiInformation.totalLength]}
-                    onChange={(value: number[]) => {
+                    onAfterChange={(value: number[]) => {
                         setConfig({
                             startTime: value[0],
                             endTime: value[1],
