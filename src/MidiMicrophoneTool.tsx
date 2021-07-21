@@ -4,11 +4,11 @@ import "./MidiMicrophoneTool.css";
 import Soundfont from "soundfont-player";
 import { Midi, MidiJSON } from "@tonejs/midi";
 import { Range } from "rc-slider";
-import 'rc-slider/assets/index.css'
-//import MidiPlayerJS from "midi-player-js";
-import * as MidiPlayerJS from './midi-player-js/player';
-import { useAnimationFrame } from './CustomHooks'
-
+import "rc-slider/assets/index.css";
+import { v4 as uuidv4 } from "uuid";
+import * as MidiPlayerJS from "./midi-player-js/player";
+import { useAnimationFrame } from "./CustomHooks";
+import { TempoEvent, TimeSignatureEvent } from "@tonejs/midi/dist/Header";
 
 type MidiInformation = {
     totalLength: number;
@@ -17,6 +17,25 @@ type MidiInformation = {
 type Config = {
     startTime: number;
     endTime: number;
+};
+
+type MidiMetaData = {
+    name: string | null;
+    tempos: TempoEvent[] | null;
+    timeSignature: TimeSignatureEvent[] | null;
+    ppq: number | null;
+};
+
+type Comment = {
+    time: number[];
+    text: string;
+};
+
+type WorkSpace = {
+    id: string;
+    name: string;
+    midiMetaData: MidiMetaData;
+    comments: Comment[];
 };
 
 function MidiMicrophoneTool() {
@@ -44,6 +63,10 @@ function MidiMicrophoneTool() {
     const audioRef = useRef<HTMLAudioElement>(null); //change legacy ref later
 
     const pointer = useRef<number>(0);
+
+    const [currentWorkspace, setCurrentWorkspace] = useState<WorkSpace | null>(null);
+    const [allWorkspaces, setAllWorkspaces] = useState<WorkSpace[]>([]);
+    const [canCreateWorkspace, setCanCreateWorkspace] = useState<boolean>(false);
 
     const [midiInformation, setMidiInformation] = useState<MidiInformation>({
         totalLength: 0,
@@ -106,28 +129,27 @@ function MidiMicrophoneTool() {
                 }
             });
             player.current.on("fileLoaded", function () {
-                setMidiInformation({totalLength: player.current.getSongTime()});
-                setConfig(({
-                    startTime: 0, 
-                    endTime: player.current.getSongTime()
-                }))
+                setMidiInformation({ totalLength: player.current.getSongTime() });
+                setConfig({
+                    startTime: 0,
+                    endTime: player.current.getSongTime(),
+                });
             });
-            player.current.on("endOfFile", function() {
+            player.current.on("endOfFile", function () {
                 //identical to stopprecording function, handles when music is played until end, and not through user button click
                 if (mediaRecorder.current === null) return;
-                if (mediaRecorder.current.state === "inactive") return //for preview listening, media recorder would be inactive, 
+                if (mediaRecorder.current.state === "inactive") return; //for preview listening, media recorder would be inactive,
                 // so continuing on would result in a crash
                 mediaRecorder.current.stop();
                 player.current.stop(); //not sure if needed
-                console.log("stopped")
-            })
+                console.log("stopped");
+            });
         });
     }, []);
 
     useEffect(() => {
         console.log(midiJSON);
     }, [midiJSON]);
-    
 
     useEffect(() => {
         if (midiUri === null) return;
@@ -138,6 +160,8 @@ function MidiMicrophoneTool() {
         };
         player.current.loadDataUri(midiUri);
         setMidiObject();
+
+        setCanCreateWorkspace(true); //enable create workspace creation
     }, [midiUri]);
 
     useEffect(() => {
@@ -153,13 +177,12 @@ function MidiMicrophoneTool() {
 
     useEffect(() => {
         if (player.current) {
-          player.current.skipToSeconds(config.startTime); //note i edited the index.d.ts file; not sure if this will cause error
+            player.current.skipToSeconds(config.startTime); //note i edited the index.d.ts file; not sure if this will cause error
         }
-        pointer.current = config.startTime
+        pointer.current = config.startTime;
     }, [config]);
 
-    useEffect(() => {
-    }, [midiInformation])
+    useEffect(() => {}, [midiInformation]);
 
     const readMidiUri = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files === null) return;
@@ -180,15 +203,18 @@ function MidiMicrophoneTool() {
         fileReader.current.readAsDataURL(file);
     };
 
-    useAnimationFrame((deltaTime: number) => {
-        // Pass on a function to the setter of the state
-        // to make sure we always have the latest state
-        if (isRecording) {
-            pointer.current += deltaTime/1000
-            if (pointer.current > config.endTime) stopRecording();
-        }
-        //setCount(prevCount => (prevCount + deltaTime * 0.01) % 100)
-      }, [isRecording, config])
+    useAnimationFrame(
+        (deltaTime: number) => {
+            // Pass on a function to the setter of the state
+            // to make sure we always have the latest state
+            if (isRecording) {
+                pointer.current += deltaTime / 1000;
+                if (pointer.current > config.endTime) stopRecording();
+            }
+            //setCount(prevCount => (prevCount + deltaTime * 0.01) % 100)
+        },
+        [isRecording, config]
+    );
 
     const startRecording = () => {
         if (isRecording || mediaRecorder.current === null) return;
@@ -232,6 +258,49 @@ function MidiMicrophoneTool() {
         setIsPreviewPlaying(false);
     };
 
+    const onCreateWorkspace = () => {
+        if (midiJSON == null) {
+            alert("Potentially invalid MIDI");
+            return;
+        }
+
+        const uuid = uuidv4();
+
+        const newWorkspace: WorkSpace = {
+            id: uuid,
+            name: `Workspace: ${uuid}`,
+            comments: [
+                {
+                    time: [Math.round(10 * Math.random()), Math.round(10 * Math.random()) + 30],
+                    text: "sample",
+                },
+                {
+                    time: [Math.round(10 * Math.random()), Math.round(10 * Math.random()) + 30],
+                    text: "sample2",
+                },
+            ],
+            midiMetaData: {
+                name: midiJSON.header.name,
+                tempos: midiJSON.header.tempos,
+                timeSignature: midiJSON.header.timeSignatures,
+                ppq: midiJSON.header.ppq,
+            },
+        };
+        setCurrentWorkspace(newWorkspace);
+        setAllWorkspaces((workspace) => {
+            const newVal = workspace.slice();
+            newVal.push(newWorkspace);
+            return newVal;
+        });
+        setCanCreateWorkspace(false);
+    };
+
+    const changeWorkspaceTo = (id : string) => {
+        const workspaceIndex = allWorkspaces.findIndex((workspace) =>workspace.id === id);
+        if (workspaceIndex === -1) return;
+        setCurrentWorkspace(allWorkspaces[workspaceIndex])
+    }
+
     const midiLoaded = midiUri !== null;
     const disablePreview = !midiLoaded || isRecording || audioSrc === null;
 
@@ -246,7 +315,15 @@ function MidiMicrophoneTool() {
             ></input>
             <br />
             <div>{`MIDI Length (seconds): ${midiLoaded ? midiInformation.totalLength : `-`}`}</div>
-            <div style={{display:"flex", justifyContent: "center", flexDirection: "column", alignItems: "center", minWidth: "50%"}}>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    minWidth: "50%",
+                }}
+            >
                 <Range
                     defaultValue={[0, 0]}
                     allowCross={false}
@@ -299,6 +376,33 @@ function MidiMicrophoneTool() {
                         <source src={audioSrc as string} type="audio/ogg" />
                     </audio>
                 ) : null}
+            </div>
+            <div style={{ margin: "4px" }}>
+                Current Workspace: {currentWorkspace ? currentWorkspace.name : "-"}
+            </div>
+            <div style={{ margin: "16px" }}>
+                <button disabled={!canCreateWorkspace} onClick={() => onCreateWorkspace()}>Create New Workspace</button>
+            </div>
+            <div>
+                Current Workspace Panel: 
+                {
+                    currentWorkspace ? currentWorkspace.comments.map((comment) => {
+                        return <div>
+                            <div>Times:{comment.time[0] + " , " + comment.time[1]}</div>
+                            <div>Text: {comment.text}</div>
+                            </div>
+                    }): null
+                }
+            </div>
+            <div style={{ margin: "16px" }}>
+                <h4>All Workspaces:</h4>
+                {
+                    <ul>
+                        {allWorkspaces.map((workspace) => {
+                            return <li key={workspace.id} style={{cursor: "pointer"}} onClick={() => changeWorkspaceTo(workspace.id)}>{workspace.name}</li>;
+                        })}
+                    </ul>
+                }
             </div>
         </div>
     );
