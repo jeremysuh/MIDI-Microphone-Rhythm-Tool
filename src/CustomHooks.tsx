@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useEffect, useRef } from "react";
 
-const useAnimationFrame = (callback: any) => {
+const useAnimationFrame = (callback: any, dependencies: any) => {
     const requestRef = useRef<any>();
     const previousTimeRef = useRef<number | undefined>(undefined);
 
@@ -19,7 +19,7 @@ const useAnimationFrame = (callback: any) => {
 
         requestRef.current = requestAnimationFrame(animate);
         return () => cancelAnimationFrame(requestRef.current);
-    }, [stableCallback]); // Make sure the effect runs only once
+    }, [stableCallback, dependencies]); // Make sure the effect runs only once
 };
 
 export { useAnimationFrame };
