@@ -43,7 +43,7 @@ function MidiMicrophoneTool() {
 
     const audioRef = useRef<HTMLAudioElement>(null); //change legacy ref later
 
-    const [pointer, setPointer] = useState<number>(0);
+    const pointer = useRef<number>(0);
 
     const [midiInformation, setMidiInformation] = useState<MidiInformation>({
         totalLength: 0,
@@ -155,6 +155,7 @@ function MidiMicrophoneTool() {
         if (player.current) {
           player.current.skipToSeconds(config.startTime); //note i edited the index.d.ts file; not sure if this will cause error
         }
+        pointer.current = config.startTime
     }, [config]);
 
     useEffect(() => {
@@ -182,10 +183,12 @@ function MidiMicrophoneTool() {
     useAnimationFrame((deltaTime: number) => {
         // Pass on a function to the setter of the state
         // to make sure we always have the latest state
-        setPointer((prev) => prev + deltaTime/1000);
-        console.log(deltaTime)
+        if (isRecording) {
+            pointer.current += deltaTime/1000
+            if (pointer.current > config.endTime) stopRecording();
+        }
         //setCount(prevCount => (prevCount + deltaTime * 0.01) % 100)
-      })
+      }, [isRecording, config])
 
     const startRecording = () => {
         if (isRecording || mediaRecorder.current === null) return;
@@ -250,7 +253,7 @@ function MidiMicrophoneTool() {
                     disabled={isRecording}
                     min={0}
                     max={midiInformation.totalLength}
-                    value={[config.startTime, midiInformation.totalLength]}
+                    value={[config.startTime, config.endTime]}
                     onChange={(value: number[]) => {
                         setConfig({
                             startTime: value[0],
@@ -286,7 +289,6 @@ function MidiMicrophoneTool() {
                 Stop Preview
             </button>
             <br />
-            <div style={{}}>{pointer.toFixed(2)} seconds</div>
             <br />
             <div>
                 {/* might have to change this approach as buffering issues are causing delay/problems in Chrome */}
