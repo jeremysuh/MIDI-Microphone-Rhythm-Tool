@@ -3,12 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import "./MidiMicrophoneTool.css";
 import Soundfont from "soundfont-player";
 import { Midi, MidiJSON } from "@tonejs/midi";
-import { Range } from "rc-slider";
-import "rc-slider/assets/index.css";
 import { v4 as uuidv4 } from "uuid";
 import * as MidiPlayerJS from "./midi-player-js/player";
 import { useAnimationFrame } from "./CustomHooks";
 import { TempoEvent, TimeSignatureEvent } from "@tonejs/midi/dist/Header";
+import { CreateWorkspaceButton, WorkspacesList } from "./WorkspacesList";
+import { WorkspaceDetails } from "./WorkspaceDetails";
+import { PreviewPanel } from "./PreviewPanel";
+import { MidiTrackPanel } from "./MidiTrackPanel";
 
 type MidiInformation = {
     totalLength: number;
@@ -295,11 +297,11 @@ function MidiMicrophoneTool() {
         setCanCreateWorkspace(false);
     };
 
-    const changeWorkspaceTo = (id : string) => {
-        const workspaceIndex = allWorkspaces.findIndex((workspace) =>workspace.id === id);
+    const changeWorkspaceTo = (id: string) => {
+        const workspaceIndex = allWorkspaces.findIndex((workspace) => workspace.id === id);
         if (workspaceIndex === -1) return;
-        setCurrentWorkspace(allWorkspaces[workspaceIndex])
-    }
+        setCurrentWorkspace(allWorkspaces[workspaceIndex]);
+    };
 
     const midiLoaded = midiUri !== null;
     const disablePreview = !midiLoaded || isRecording || audioSrc === null;
@@ -307,103 +309,33 @@ function MidiMicrophoneTool() {
     return (
         <div className="App">
             <h1>{"MIDI & Microphone Rhythm Practice"}</h1>
-            <input
-                type="file"
-                accept="audio/midi, audio/mid"
-                onChange={(event) => readMidiUri(event)}
-                disabled={!soundFontLoaded || isRecording || isPreviewPlaying}
-            ></input>
+            <MidiTrackPanel
+                soundFontLoaded={soundFontLoaded}
+                isRecording={isRecording}
+                isPreviewPlaying={isPreviewPlaying}
+                midiLoaded={midiLoaded}
+                midiInformation={midiInformation}
+                readMidiUri={readMidiUri}
+                config={config}
+                setConfig={setConfig}
+                allowMicrophoneAccess={allowMicrophoneAccess}
+                hasMicrophoneAccess={hasMicrophoneAccess}
+                startRecording={startRecording}
+                stopRecording={stopRecording}
+            />
             <br />
-            <div>{`MIDI Length (seconds): ${midiLoaded ? midiInformation.totalLength : `-`}`}</div>
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    minWidth: "50%",
-                }}
-            >
-                <Range
-                    defaultValue={[0, 0]}
-                    allowCross={false}
-                    disabled={isRecording}
-                    min={0}
-                    max={midiInformation.totalLength}
-                    value={[config.startTime, config.endTime]}
-                    onChange={(value: number[]) => {
-                        setConfig({
-                            startTime: value[0],
-                            endTime: value[1],
-                        });
-                    }}
-                />
-                <div>Start Time: {config.startTime}</div>
-                <div>End Time: {config.endTime}</div>
-            </div>
-            <br />
-            <button onClick={() => allowMicrophoneAccess()} disabled={hasMicrophoneAccess}>
-                Allow Microphone Access
-            </button>
-            <br />
-            <br />
-            <button onClick={() => startRecording()} disabled={!midiLoaded || isRecording}>
-                Record Start
-            </button>
-            <button onClick={() => stopRecording()} disabled={!midiLoaded || !isRecording}>
-                Record Stop
-            </button>
-            <br />
-            <br />
-            <button onClick={() => playPreview()} disabled={disablePreview}>
-                Play Preview
-            </button>
-            {/* {pause button currently ineffective when when pause & resuming; player starts back at config.startime instead} */}
-            <button onClick={() => pausePreview()} disabled={disablePreview}>
-                Pause Preview
-            </button>
-            <button onClick={() => stopPreview()} disabled={disablePreview}>
-                Stop Preview
-            </button>
-            <br />
-            <br />
-            <div>
-                {/* might have to change this approach as buffering issues are causing delay/problems in Chrome */}
-                {/* or implement the player something like this */}
-                {/* {https://letsbuildui.dev/articles/building-an-audio-player-with-react-hooks} */}
-                {audioSrc && !isRecording ? (
-                    <audio controls ref={audioRef}>
-                        <source src={audioSrc as string} type="audio/ogg" />
-                    </audio>
-                ) : null}
-            </div>
-            <div style={{ margin: "4px" }}>
-                Current Workspace: {currentWorkspace ? currentWorkspace.name : "-"}
-            </div>
-            <div style={{ margin: "16px" }}>
-                <button disabled={!canCreateWorkspace} onClick={() => onCreateWorkspace()}>Create New Workspace</button>
-            </div>
-            <div>
-                Current Workspace Panel: 
-                {
-                    currentWorkspace ? currentWorkspace.comments.map((comment) => {
-                        return <div>
-                            <div>Times:{comment.time[0] + " , " + comment.time[1]}</div>
-                            <div>Text: {comment.text}</div>
-                            </div>
-                    }): null
-                }
-            </div>
-            <div style={{ margin: "16px" }}>
-                <h4>All Workspaces:</h4>
-                {
-                    <ul>
-                        {allWorkspaces.map((workspace) => {
-                            return <li key={workspace.id} style={{cursor: "pointer"}} onClick={() => changeWorkspaceTo(workspace.id)}>{workspace.name}</li>;
-                        })}
-                    </ul>
-                }
-            </div>
+            <PreviewPanel
+                playPreview={playPreview}
+                pausePreview={pausePreview}
+                stopPreview={stopPreview}
+                disablePreview={disablePreview}
+                audioSrc={audioSrc}
+                isRecording={isRecording}
+                audioRef={audioRef}
+            />
+            <CreateWorkspaceButton canCreateWorkspace={canCreateWorkspace} onCreateWorkspace={onCreateWorkspace} />
+            <WorkspaceDetails currentWorkspace={currentWorkspace} />
+            <WorkspacesList changeWorkspaceTo={changeWorkspaceTo} allWorkspaces={allWorkspaces} />
         </div>
     );
 }
