@@ -75,10 +75,12 @@ function MidiMicrophoneTool() {
     const [midiInformation, setMidiInformation] = useState<MidiInformation>({
         totalLength: 0,
     });
+
     const [config, setConfig] = useState<Config>({
         startTime: 0,
         endTime: 0,
     });
+    const [mostRecentTimeRange, setMostRecentTimeRange] = useState<number[]>([-1, 0])
 
     const allowMicrophoneAccess = () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -165,7 +167,7 @@ function MidiMicrophoneTool() {
         };
         player.current.loadDataUri(midiUri);
         setMidiObject();
-
+        setCurrentWorkspace(null);
         setCanCreateWorkspace(true); //enable create workspace creation
     }, [midiUri]);
 
@@ -231,6 +233,7 @@ function MidiMicrophoneTool() {
     const stopRecording = () => {
         if (!isRecording || mediaRecorder.current === null) return;
         mediaRecorder.current.stop();
+        setMostRecentTimeRange([config.startTime, config.endTime]);
         console.log(mediaRecorder.current.state);
         player.current.stop();
     };
@@ -309,6 +312,16 @@ function MidiMicrophoneTool() {
         if (workspaceIndex === -1) return;
         setCurrentWorkspace(allWorkspaces[workspaceIndex]);
     };
+    
+    const addCommentToWorkspace = (workspaceId : string, comment : string, time : number[]) => {
+        const newWorkspaces = allWorkspaces.slice();
+        const index = newWorkspaces.findIndex((workspace) => workspaceId === workspace.id);
+        newWorkspaces[index].comments.push({
+            time : time,
+            text : comment
+        })
+        setAllWorkspaces(newWorkspaces);
+    }
 
     const midiLoaded = midiUri !== null;
     const disablePreview = !midiLoaded || isRecording || audioSrc === null;
@@ -350,6 +363,10 @@ function MidiMicrophoneTool() {
                 audioSrc={audioSrc}
                 isRecording={isRecording}
                 audioRef={audioRef}
+                currentWorkspace={currentWorkspace}
+                timeRange={mostRecentTimeRange}
+                midiInformation={midiInformation}
+                addCommentToWorkspace={addCommentToWorkspace}
             />
             <CreateWorkspaceButton canCreateWorkspace={canCreateWorkspace} onCreateWorkspace={onCreateWorkspace} />
             <WorkspaceDetails currentWorkspace={currentWorkspace}/>
