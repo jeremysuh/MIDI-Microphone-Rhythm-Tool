@@ -241,7 +241,7 @@ function MidiMicrophoneTool() {
         const newRecordingSessions = recordingSessions.slice();
         if (newRecordingSessions.length > 0) newRecordingSessions.pop(); // adjust accordingly once multiple refs/audio at once is involved
         newRecordingSessions.push({ time: [config.startTime, config.endTime] }); //right now, only one session max
-        setRecordingSession(newRecordingSessions)
+        setRecordingSession(newRecordingSessions);
 
         console.log(mediaRecorder.current.state);
         player.current.stop();
@@ -317,6 +317,7 @@ function MidiMicrophoneTool() {
     };
 
     const changeWorkspaceTo = (id: string) => {
+        if (currentWorkspace && currentWorkspace.id === id) return;
         const workspaceIndex = allWorkspaces.findIndex((workspace) => workspace.id === id);
         if (workspaceIndex === -1) return;
         setCurrentWorkspace(allWorkspaces[workspaceIndex]);
@@ -365,7 +366,8 @@ function MidiMicrophoneTool() {
                 stopRecording={stopRecording}
             />
             <br />
-            {recordingSessions.map((session, index) => { //adjust when multiple sessions involved (including audio refs)
+            {recordingSessions.map((session, index) => {
+                //adjust when multiple sessions involved (including audio refs)
                 return (
                     <PreviewPanel
                         key={index}

@@ -3,18 +3,18 @@ import "rc-slider/assets/index.css";
 import { Range } from "rc-slider";
 
 interface MidiTrackPanelProps {
-    soundFontLoaded : boolean
-    isRecording : boolean
-    isPreviewPlaying : boolean
-    midiLoaded : boolean
-    midiInformation : any
-    readMidiUri : Function
-    config : any
-    setConfig : Function
-    allowMicrophoneAccess : Function
-    hasMicrophoneAccess : boolean
-    startRecording : Function
-    stopRecording : Function
+    soundFontLoaded: boolean;
+    isRecording: boolean;
+    isPreviewPlaying: boolean;
+    midiLoaded: boolean;
+    midiInformation: any;
+    readMidiUri: Function;
+    config: any;
+    setConfig: Function;
+    allowMicrophoneAccess: Function;
+    hasMicrophoneAccess: boolean;
+    startRecording: Function;
+    stopRecording: Function;
 }
 
 const MidiTrackPanel = ({

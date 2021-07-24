@@ -14,8 +14,8 @@ interface PreviewPanelProps {
     audioRef: React.Ref<HTMLAudioElement>;
     currentWorkspace: any;
     timeRange: number[];
-    midiInformation : any
-    addCommentToWorkspace : Function
+    midiInformation: any;
+    addCommentToWorkspace: Function;
 }
 
 const PreviewPanel = ({
@@ -29,20 +29,20 @@ const PreviewPanel = ({
     currentWorkspace,
     timeRange,
     midiInformation,
-    addCommentToWorkspace
+    addCommentToWorkspace,
 }: PreviewPanelProps) => {
     const [commentText, setCommentText] = useState<string>("");
     const [time, setTime] = useState<number[]>([timeRange[0], timeRange[1]]);
 
     useEffect(() => {
-        setTime([timeRange[0], timeRange[1]])
-    }, [timeRange])
+        setTime([timeRange[0], timeRange[1]]);
+    }, [timeRange]);
 
     const onSubmitCommentClick = () => {
         if (currentWorkspace === false) return;
         addCommentToWorkspace(currentWorkspace.id, commentText, time);
-        setCommentText("")
-    }
+        setCommentText("");
+    };
 
     return (
         <div>
@@ -85,11 +85,16 @@ const PreviewPanel = ({
                             max={midiInformation.totalLength}
                             value={[time[0], time[1]]}
                             onChange={(value: number[]) => {
-                                setTime([value[0],value[1]]);
+                                setTime([value[0], value[1]]);
                             }}
                         />
                         <div>{"Time: " + time[0] + ", " + time[1]}</div>
-                        <button disabled={!currentWorkspace || commentText.length <= 0} onClick={() => onSubmitCommentClick()}>Add Comment</button>
+                        <button
+                            disabled={!currentWorkspace || commentText.length <= 0}
+                            onClick={() => onSubmitCommentClick()}
+                        >
+                            Add Comment
+                        </button>
                     </div>
                 ) : null}
             </div>
