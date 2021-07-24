@@ -6,7 +6,6 @@ import { Midi, MidiJSON } from "@tonejs/midi";
 import { v4 as uuidv4 } from "uuid";
 import * as MidiPlayerJS from "./midi-player-js/player";
 import { useAnimationFrame } from "./CustomHooks";
-import { TempoEvent, TimeSignatureEvent } from "@tonejs/midi/dist/Header";
 import { CreateWorkspaceButton, WorkspacesList } from "./WorkspacesList";
 import { WorkspaceDetails } from "./WorkspaceDetails";
 import { PreviewPanel } from "./PreviewPanel";
@@ -23,9 +22,12 @@ type Config = {
 
 type MidiMetaData = {
     name: string | null;
-    tempos: TempoEvent[] | null;
-    timeSignature: TimeSignatureEvent[] | null;
-    ppq: number | null;
+    key: string;
+    scale: string;
+    ppq: number;
+    ticksCount: number;
+    tracksCount: number;
+    bpm: number;
 };
 
 type Comment = {
@@ -150,13 +152,14 @@ function MidiMicrophoneTool() {
     }, []);
 
     useEffect(() => {
-        console.log(midiJSON);
+        //console.log(midiJSON);
     }, [midiJSON]);
 
     useEffect(() => {
         if (midiUri === null) return;
         const setMidiObject = async () => {
             await Midi.fromUrl(midiUri as string).then((midi: Midi) => {
+                console.log(midi.toJSON());
                 setMidiJSON(midi.toJSON());
             });
         };
@@ -283,11 +286,15 @@ function MidiMicrophoneTool() {
             ],
             midiMetaData: {
                 name: midiJSON.header.name,
-                tempos: midiJSON.header.tempos,
-                timeSignature: midiJSON.header.timeSignatures,
                 ppq: midiJSON.header.ppq,
+                key: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].key : "N/A",
+                scale: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].scale : "N/A",
+                ticksCount: midiJSON.tracks[0].endOfTrackTicks ? midiJSON.tracks[0].endOfTrackTicks : 0,
+                tracksCount: midiJSON.tracks.length,
+                bpm: midiJSON.header.tempos[0] ? midiJSON.header.tempos[0].bpm : 0,
             },
         };
+        console.log(newWorkspace);
         setCurrentWorkspace(newWorkspace);
         setAllWorkspaces((workspace) => {
             const newVal = workspace.slice();
@@ -305,6 +312,17 @@ function MidiMicrophoneTool() {
 
     const midiLoaded = midiUri !== null;
     const disablePreview = !midiLoaded || isRecording || audioSrc === null;
+
+    const loadedMidiMetaData : MidiMetaData | null = midiJSON ? {
+        name: midiJSON.header.name,
+        ppq: midiJSON.header.ppq,
+        key: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].key : "N/A",
+        scale: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].scale : "N/A",
+        ticksCount: midiJSON.tracks[0].endOfTrackTicks ? midiJSON.tracks[0].endOfTrackTicks : 0,
+        tracksCount: midiJSON.tracks.length,
+        bpm: midiJSON.header.tempos[0] ? midiJSON.header.tempos[0].bpm : 0,
+    } :
+    null
 
     return (
         <div className="App">
@@ -334,8 +352,8 @@ function MidiMicrophoneTool() {
                 audioRef={audioRef}
             />
             <CreateWorkspaceButton canCreateWorkspace={canCreateWorkspace} onCreateWorkspace={onCreateWorkspace} />
-            <WorkspaceDetails currentWorkspace={currentWorkspace} />
-            <WorkspacesList changeWorkspaceTo={changeWorkspaceTo} allWorkspaces={allWorkspaces} />
+            <WorkspaceDetails currentWorkspace={currentWorkspace}/>
+            <WorkspacesList changeWorkspaceTo={changeWorkspaceTo} allWorkspaces={allWorkspaces} loadedMidiMetaData={loadedMidiMetaData}/>
         </div>
     );
 }
