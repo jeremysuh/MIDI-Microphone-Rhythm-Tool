@@ -80,7 +80,11 @@ function MidiMicrophoneTool() {
         startTime: 0,
         endTime: 0,
     });
-    const [mostRecentTimeRange, setMostRecentTimeRange] = useState<number[]>([-1, 0])
+
+    interface RecordingSession {
+        time: number[];
+    }
+    const [recordingSessions, setRecordingSession] = useState<RecordingSession[]>([]);
 
     const allowMicrophoneAccess = () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -233,7 +237,12 @@ function MidiMicrophoneTool() {
     const stopRecording = () => {
         if (!isRecording || mediaRecorder.current === null) return;
         mediaRecorder.current.stop();
-        setMostRecentTimeRange([config.startTime, config.endTime]);
+
+        const newRecordingSessions = recordingSessions.slice();
+        if (newRecordingSessions.length > 0) newRecordingSessions.pop(); // adjust accordingly once multiple refs/audio at once is involved
+        newRecordingSessions.push({ time: [config.startTime, config.endTime] }); //right now, only one session max
+        setRecordingSession(newRecordingSessions)
+
         console.log(mediaRecorder.current.state);
         player.current.stop();
     };
@@ -312,30 +321,31 @@ function MidiMicrophoneTool() {
         if (workspaceIndex === -1) return;
         setCurrentWorkspace(allWorkspaces[workspaceIndex]);
     };
-    
-    const addCommentToWorkspace = (workspaceId : string, comment : string, time : number[]) => {
+
+    const addCommentToWorkspace = (workspaceId: string, comment: string, time: number[]) => {
         const newWorkspaces = allWorkspaces.slice();
         const index = newWorkspaces.findIndex((workspace) => workspaceId === workspace.id);
         newWorkspaces[index].comments.push({
-            time : time,
-            text : comment
-        })
+            time: time,
+            text: comment,
+        });
         setAllWorkspaces(newWorkspaces);
-    }
+    };
 
     const midiLoaded = midiUri !== null;
     const disablePreview = !midiLoaded || isRecording || audioSrc === null;
 
-    const loadedMidiMetaData : MidiMetaData | null = midiJSON ? {
-        name: midiJSON.header.name,
-        ppq: midiJSON.header.ppq,
-        key: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].key : "N/A",
-        scale: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].scale : "N/A",
-        ticksCount: midiJSON.tracks[0].endOfTrackTicks ? midiJSON.tracks[0].endOfTrackTicks : 0,
-        tracksCount: midiJSON.tracks.length,
-        bpm: midiJSON.header.tempos[0] ? midiJSON.header.tempos[0].bpm : 0,
-    } :
-    null
+    const loadedMidiMetaData: MidiMetaData | null = midiJSON
+        ? {
+              name: midiJSON.header.name,
+              ppq: midiJSON.header.ppq,
+              key: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].key : "N/A",
+              scale: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].scale : "N/A",
+              ticksCount: midiJSON.tracks[0].endOfTrackTicks ? midiJSON.tracks[0].endOfTrackTicks : 0,
+              tracksCount: midiJSON.tracks.length,
+              bpm: midiJSON.header.tempos[0] ? midiJSON.header.tempos[0].bpm : 0,
+          }
+        : null;
 
     return (
         <div className="App">
@@ -355,22 +365,32 @@ function MidiMicrophoneTool() {
                 stopRecording={stopRecording}
             />
             <br />
-            <PreviewPanel
-                playPreview={playPreview}
-                pausePreview={pausePreview}
-                stopPreview={stopPreview}
-                disablePreview={disablePreview}
-                audioSrc={audioSrc}
-                isRecording={isRecording}
-                audioRef={audioRef}
-                currentWorkspace={currentWorkspace}
-                timeRange={mostRecentTimeRange}
-                midiInformation={midiInformation}
-                addCommentToWorkspace={addCommentToWorkspace}
-            />
+            {recordingSessions.map((session, index) => { //adjust when multiple sessions involved (including audio refs)
+                return (
+                    <PreviewPanel
+                        key={index}
+                        playPreview={playPreview}
+                        pausePreview={pausePreview}
+                        stopPreview={stopPreview}
+                        disablePreview={disablePreview}
+                        audioSrc={audioSrc}
+                        isRecording={isRecording}
+                        audioRef={audioRef}
+                        currentWorkspace={currentWorkspace}
+                        timeRange={session.time}
+                        midiInformation={midiInformation}
+                        addCommentToWorkspace={addCommentToWorkspace}
+                    />
+                );
+            })}
+
             <CreateWorkspaceButton canCreateWorkspace={canCreateWorkspace} onCreateWorkspace={onCreateWorkspace} />
-            <WorkspaceDetails currentWorkspace={currentWorkspace}/>
-            <WorkspacesList changeWorkspaceTo={changeWorkspaceTo} allWorkspaces={allWorkspaces} loadedMidiMetaData={loadedMidiMetaData}/>
+            <WorkspaceDetails currentWorkspace={currentWorkspace} />
+            <WorkspacesList
+                changeWorkspaceTo={changeWorkspaceTo}
+                allWorkspaces={allWorkspaces}
+                loadedMidiMetaData={loadedMidiMetaData}
+            />
         </div>
     );
 }
