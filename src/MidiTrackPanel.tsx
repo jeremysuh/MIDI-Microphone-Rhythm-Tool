@@ -32,7 +32,7 @@ const MidiTrackPanel = ({
     stopRecording,
 }: MidiTrackPanelProps) => {
     return (
-        <div>
+        <div style={{margin: "1em"}}>
             <input
                 type="file"
                 accept="audio/midi, audio/mid"

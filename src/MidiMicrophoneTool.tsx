@@ -10,6 +10,7 @@ import { CreateWorkspaceButton, WorkspacesList } from "./WorkspacesList";
 import { WorkspaceDetails } from "./WorkspaceDetails";
 import { PreviewPanel } from "./PreviewPanel";
 import { MidiTrackPanel } from "./MidiTrackPanel";
+import { Navbar } from "./Navbar";
 
 type MidiInformation = {
     totalLength: number;
@@ -41,7 +42,7 @@ type WorkSpace = {
     midiMetaData: MidiMetaData;
     comments: Comment[];
 };
- 
+
 function MidiMicrophoneTool() {
     //const [midiArrayBuffer, setMidiArrayBuffer] = useState<ArrayBuffer | null>(null);
     const [midiJSON, setMidiJSON] = useState<MidiJSON | null>(null);
@@ -349,50 +350,52 @@ function MidiMicrophoneTool() {
         : null;
 
     return (
-        <div className="App">
-            <h1>{"MIDI & Microphone Rhythm Practice"}</h1>
-            <MidiTrackPanel
-                soundFontLoaded={soundFontLoaded}
-                isRecording={isRecording}
-                isPreviewPlaying={isPreviewPlaying}
-                midiLoaded={midiLoaded}
-                midiInformation={midiInformation}
-                readMidiUri={readMidiUri}
-                config={config}
-                setConfig={setConfig}
-                allowMicrophoneAccess={allowMicrophoneAccess}
-                hasMicrophoneAccess={hasMicrophoneAccess}
-                startRecording={startRecording}
-                stopRecording={stopRecording}
-            />
-            <br />
-            {recordingSessions.map((session, index) => {
-                //adjust when multiple sessions involved (including audio refs)
-                return (
-                    <PreviewPanel
-                        key={index}
-                        playPreview={playPreview}
-                        pausePreview={pausePreview}
-                        stopPreview={stopPreview}
-                        disablePreview={disablePreview}
-                        audioSrc={audioSrc}
-                        isRecording={isRecording}
-                        audioRef={audioRef}
-                        currentWorkspace={currentWorkspace}
-                        timeRange={session.time}
-                        midiInformation={midiInformation}
-                        addCommentToWorkspace={addCommentToWorkspace}
-                    />
-                );
-            })}
+        <div>
+            <Navbar />
+            <div className="App">
+                <MidiTrackPanel
+                    soundFontLoaded={soundFontLoaded}
+                    isRecording={isRecording}
+                    isPreviewPlaying={isPreviewPlaying}
+                    midiLoaded={midiLoaded}
+                    midiInformation={midiInformation}
+                    readMidiUri={readMidiUri}
+                    config={config}
+                    setConfig={setConfig}
+                    allowMicrophoneAccess={allowMicrophoneAccess}
+                    hasMicrophoneAccess={hasMicrophoneAccess}
+                    startRecording={startRecording}
+                    stopRecording={stopRecording}
+                />
+                <br />
+                {recordingSessions.map((session, index) => {
+                    //adjust when multiple sessions involved (including audio refs)
+                    return (
+                        <PreviewPanel
+                            key={index}
+                            playPreview={playPreview}
+                            pausePreview={pausePreview}
+                            stopPreview={stopPreview}
+                            disablePreview={disablePreview}
+                            audioSrc={audioSrc}
+                            isRecording={isRecording}
+                            audioRef={audioRef}
+                            currentWorkspace={currentWorkspace}
+                            timeRange={session.time}
+                            midiInformation={midiInformation}
+                            addCommentToWorkspace={addCommentToWorkspace}
+                        />
+                    );
+                })}
 
-            <CreateWorkspaceButton canCreateWorkspace={canCreateWorkspace} onCreateWorkspace={onCreateWorkspace} />
-            <WorkspaceDetails currentWorkspace={currentWorkspace} />
-            <WorkspacesList
-                changeWorkspaceTo={changeWorkspaceTo}
-                allWorkspaces={allWorkspaces}
-                loadedMidiMetaData={loadedMidiMetaData}
-            />
+                <CreateWorkspaceButton canCreateWorkspace={canCreateWorkspace} onCreateWorkspace={onCreateWorkspace} />
+                <WorkspaceDetails currentWorkspace={currentWorkspace} />
+                <WorkspacesList
+                    changeWorkspaceTo={changeWorkspaceTo}
+                    allWorkspaces={allWorkspaces}
+                    loadedMidiMetaData={loadedMidiMetaData}
+                />
+            </div>
         </div>
     );
 }
