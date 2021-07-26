@@ -1,5 +1,9 @@
 // import { useRef, useState } from "react";
 
+import Fab from "@material-ui/core/Fab";
+import Typography from "@material-ui/core/Typography";
+import AddIcon from "@material-ui/icons/Add";
+
 interface WorkspacesListProps {
     allWorkspaces: any[];
     changeWorkspaceTo: Function;
@@ -22,13 +26,28 @@ type MidiMetaData = {
 };
 
 const CreateWorkspaceButton = ({ canCreateWorkspace, onCreateWorkspace }: CreateWorkspaceButtonProps) => {
+    const fabStyle = {
+        margin: 0,
+        top: "auto",
+        right: 20,
+        bottom: 20,
+        left: "auto",
+        position: "fixed",
+    };
+
     return (
         <div>
-            <div style={{ margin: "16px" }}>
-                <button disabled={!canCreateWorkspace} onClick={() => onCreateWorkspace()}>
-                    Create New Workspace
-                </button>
-            </div>
+            <Fab
+                variant="extended"
+                color="secondary"
+                aria-label="add"
+                disabled={!canCreateWorkspace}
+                onClick={() => onCreateWorkspace()}
+                style={fabStyle as any}
+            >
+                <AddIcon style={{ marginRight: "4px" }} />
+                <Typography style={{ marginLeft: "4px", marginRight: "4px" }}>Create Workspace</Typography>
+            </Fab>
         </div>
     );
 };
