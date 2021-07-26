@@ -41,7 +41,7 @@ type WorkSpace = {
     midiMetaData: MidiMetaData;
     comments: Comment[];
 };
-
+ 
 function MidiMicrophoneTool() {
     //const [midiArrayBuffer, setMidiArrayBuffer] = useState<ArrayBuffer | null>(null);
     const [midiJSON, setMidiJSON] = useState<MidiJSON | null>(null);
