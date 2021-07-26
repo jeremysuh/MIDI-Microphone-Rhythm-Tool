@@ -1,9 +1,13 @@
 // import { useRef, useState } from "react";
 
 import Fab from "@material-ui/core/Fab";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
 import Typography from "@material-ui/core/Typography";
 import AddIcon from "@material-ui/icons/Add";
-
+import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
+ 
 interface WorkspacesListProps {
     allWorkspaces: any[];
     changeWorkspaceTo: Function;
@@ -68,23 +72,28 @@ const WorkspacesList = ({ allWorkspaces, changeWorkspaceTo, loadedMidiMetaData }
 
     return (
         <div style={{ margin: "16px" }}>
-            <h4>All Workspaces:</h4>
+            <Paper elevation={2} style={{ padding: "1em", minWidth: "50vw" }}>
+                <Grid container justifyContent="space-between" spacing={1} alignItems="center" direction="column">
+            <Typography variant="h6">All Workspaces:</Typography>
             {
-                <ul>
+                <List>
                     {allWorkspaces.map((workspace) => {
                         return (
-                            <li key={workspace.id} style={{ cursor: "pointer" }}>
-                                <button
-                                    onClick={() => changeWorkspaceTo(workspace.id)}
-                                    disabled={matchesLoadedMidiMetaData(workspace.midiMetaData) === false}
-                                >
-                                    {workspace.name}
-                                </button>
-                            </li>
+                            <ListItem
+                                button
+                                key={workspace.id}
+                                style={{ cursor: "pointer" }}
+                                onClick={() => changeWorkspaceTo(workspace.id)}
+                                disabled={matchesLoadedMidiMetaData(workspace.midiMetaData) === false}
+                            >
+                                {workspace.name}
+                             </ListItem>
                         );
                     })}
-                </ul>
+                </List>
             }
+            </Grid>
+            </Paper>
         </div>
     );
 };
