@@ -1,9 +1,16 @@
 // import { useRef, useState } from "react";
 
-import "rc-slider/assets/index.css";
-import { Range } from "rc-slider";
+import Slider from "@material-ui/core/Slider";
 import { useEffect, useState } from "react";
-
+import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
+import IconButton from "@material-ui/core/IconButton";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import PauseIcon from "@material-ui/icons/Pause";
+import StopIcon from "@material-ui/icons/Stop";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
 interface PreviewPanelProps {
     playPreview: Function;
     pausePreview: Function;
@@ -45,59 +52,77 @@ const PreviewPanel = ({
     };
 
     return (
-        <div>
-            <button onClick={() => playPreview()} disabled={disablePreview}>
-                Play Preview
-            </button>
-            {/* {pause button currently ineffective when when pause & resuming; player starts back at config.startime instead} */}
-            <button onClick={() => pausePreview()} disabled={disablePreview}>
-                Pause Preview
-            </button>
-            <button onClick={() => stopPreview()} disabled={disablePreview}>
-                Stop Preview
-            </button>
-            <br />
-            <br />
-            <div>
-                {/* might have to change this approach as buffering issues are causing delay/problems in Chrome */}
-                {/* or implement the player something like this */}
-                {/* {https://letsbuildui.dev/articles/building-an-audio-player-with-react-hooks} */}
-                {audioSrc && !isRecording ? (
+        <div style={{ margin: "16px" }}>
+            <Paper elevation={2} style={{ padding: "1em", minWidth: "50vw" }}>
+                <Grid container justifyContent="space-between" spacing={1} alignItems="center" direction="column">
+                    <Grid
+                        container
+                        justifyContent="center"
+                        spacing={1}
+                        alignItems="center"
+                        direction="row"
+                        style={{ padding: "16px" }}
+                    >
+                        <Grid item key={0}>
+                            <IconButton onClick={() => playPreview()} disabled={disablePreview}>
+                                <PlayArrowIcon color={disablePreview ? "disabled" : "secondary"} />
+                            </IconButton>
+                        </Grid>
+                        <Grid item key={1}>
+                            {/* {pause button currently ineffective when when pause & resuming; player starts back at config.startime instead} */}
+
+                            <IconButton onClick={() => pausePreview()} disabled={disablePreview}>
+                                <PauseIcon color={disablePreview ? "disabled" : "secondary"} />
+                            </IconButton>
+                        </Grid>
+                        <Grid item key={2}>
+                            <IconButton onClick={() => stopPreview()} disabled={disablePreview}>
+                                <StopIcon color={disablePreview ? "disabled" : "secondary"} />
+                            </IconButton>
+                        </Grid>
+                    </Grid>
+                    <br />
                     <div>
-                        <div>
-                            <audio controls ref={audioRef}>
-                                <source src={audioSrc as string} type="audio/ogg" />
-                            </audio>
-                        </div>
-                        <label htmlFor="comment">Comment:</label>
-                        <input
-                            type="text"
-                            id="comment"
-                            name="comment"
-                            required
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                        />
-                        <Range
-                            defaultValue={[0, 0]}
-                            allowCross={false}
-                            min={0}
-                            max={midiInformation.totalLength}
-                            value={[time[0], time[1]]}
-                            onChange={(value: number[]) => {
-                                setTime([value[0], value[1]]);
-                            }}
-                        />
-                        <div>{"Time: " + time[0] + ", " + time[1]}</div>
-                        <button
-                            disabled={!currentWorkspace || commentText.length <= 0}
-                            onClick={() => onSubmitCommentClick()}
-                        >
-                            Add Comment
-                        </button>
+                        {/* might have to change this approach as buffering issues are causing delay/problems in Chrome */}
+                        {/* or implement the player something like this */}
+                        {/* {https://letsbuildui.dev/articles/building-an-audio-player-with-react-hooks} */}
+                        {audioSrc && !isRecording ? (
+                            <div>
+                                <div>
+                                    <audio controls ref={audioRef}>
+                                        <source src={audioSrc as string} type="audio/ogg" />
+                                    </audio>
+                                </div>
+                                <TextField
+                                    id="comment"
+                                    label="Add comment"
+                                    variant="outlined"
+                                    required
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    style={{ margin: "4px" }}
+                                />
+                                <Slider
+                                    value={[time[0], time[1]]}
+                                    color="secondary"
+                                    min={0}
+                                    max={midiInformation.totalLength}
+                                    onChange={(_, newRange) => setTime(newRange as number[])}
+                                    valueLabelDisplay="auto"
+                                />
+                                <Typography variant="subtitle2">{"Time: " + time[0] + ", " + time[1]}</Typography>
+                                <Button
+                                    variant="contained"
+                                    disabled={!currentWorkspace || commentText.length <= 0}
+                                    onClick={() => onSubmitCommentClick()}
+                                >
+                                    Add Comment
+                                </Button>
+                            </div>
+                        ) : null}
                     </div>
-                ) : null}
-            </div>
+                </Grid>
+            </Paper>
         </div>
     );
 };
