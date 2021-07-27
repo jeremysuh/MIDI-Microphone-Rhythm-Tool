@@ -98,7 +98,7 @@ const MidiTrackPanel = ({
                 trackHeight.current
             );
         },
-        [canvasRef]
+        [canvasRef, midiLoaded]
     );
 
     return (

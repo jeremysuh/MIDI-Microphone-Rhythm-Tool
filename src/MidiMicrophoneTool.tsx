@@ -251,9 +251,11 @@ function MidiMicrophoneTool() {
     const playPreview = () => {
         if (audioRef.current === null) return;
         if (player.current.isPlaying()) return;
+        if (recordingSessions.length === 0) return;
         audioRef.current.play();
         audioRef.current.addEventListener("ended", stopPreview);
-        player.current.skipToSeconds(config.startTime + audioRef.current.currentTime).play();
+        player.current.skipToSeconds(recordingSessions[0].time[0] + audioRef.current.currentTime).play(); //update when multiple sessions are added
+        //player.current.skipToSeconds(config.startTime + audioRef.current.currentTime).play();
         setIsPreviewPlaying(true);
     };
 
