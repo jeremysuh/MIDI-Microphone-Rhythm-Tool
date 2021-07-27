@@ -9,6 +9,8 @@ import MicIcon from "@material-ui/icons/Mic";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import StopIcon from "@material-ui/icons/Stop";
 import Typography from "@material-ui/core/Typography";
+import { useRef } from "react";
+import { useAnimationFrame } from "./CustomHooks";
 
 interface MidiTrackPanelProps {
     soundFontLoaded: boolean;
@@ -39,6 +41,24 @@ const MidiTrackPanel = ({
     startRecording,
     stopRecording,
 }: MidiTrackPanelProps) => {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const x = useRef<number>(0);
+    //const y = useRef<number>(0)
+
+    useAnimationFrame(() => {
+        if (canvasRef.current === null) return;
+
+        const ctx = canvasRef.current.getContext("2d");
+        if (ctx === null || ctx === undefined) return;
+
+        ctx.clearRect(0, 0, 600, 150);
+
+        ctx.fillStyle = "#2d2d2d";
+        ctx.fillRect(10 + x.current, 10, 150, 100);
+
+        x.current += 0.1;
+    }, [canvasRef]);
+
     return (
         <div style={{ margin: "1em" }}>
             <Paper elevation={2} style={{ padding: "1em", minWidth: "50vw" }}>
@@ -50,6 +70,15 @@ const MidiTrackPanel = ({
                         disabled={!soundFontLoaded || isRecording || isPreviewPlaying}
                     ></input>
                     <br />
+                    <div style={{ margin: "1em" }}>
+                        <canvas
+                            id="canvas"
+                            ref={canvasRef}
+                            width="600px"
+                            height="150px"
+                            style={{ backgroundColor: "lightgrey" }}
+                        ></canvas>
+                    </div>
                     <div
                         style={{
                             display: "flex",
