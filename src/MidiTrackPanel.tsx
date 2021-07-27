@@ -3,10 +3,11 @@ import "rc-slider/assets/index.css";
 import { Range } from "rc-slider";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
+import IconButton from "@material-ui/core/IconButton";
+
 import MicIcon from "@material-ui/icons/Mic";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import StopIcon from "@material-ui/icons/Stop";
-import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 
 interface MidiTrackPanelProps {
