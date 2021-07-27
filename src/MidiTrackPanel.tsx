@@ -1,16 +1,28 @@
 // import { useRef, useState } from "react";
-import "rc-slider/assets/index.css";
-import { Range } from "rc-slider";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
-import IconButton from "@material-ui/core/IconButton";
-
+import "./MidiMicrophoneTool.css";
+import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import MicIcon from "@material-ui/icons/Mic";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import StopIcon from "@material-ui/icons/Stop";
 import Typography from "@material-ui/core/Typography";
 import { useRef } from "react";
 import { useAnimationFrame } from "./CustomHooks";
+import Fab from "@material-ui/core/Fab";
+import BackupIcon from "@material-ui/icons/Backup";
+import Slider from "@material-ui/core/Slider";
+
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        margin: {
+            margin: theme.spacing(1),
+        },
+        extendedIcon: {
+            marginRight: theme.spacing(1),
+        }, 
+    })
+);
 
 interface MidiTrackPanelProps {
     soundFontLoaded: boolean;
@@ -26,6 +38,7 @@ interface MidiTrackPanelProps {
     startRecording: Function;
     stopRecording: Function;
     pointer: any;
+    fileName: string | null;
 }
 
 const MidiTrackPanel = ({
@@ -42,7 +55,10 @@ const MidiTrackPanel = ({
     startRecording,
     stopRecording,
     pointer,
+    fileName,
 }: MidiTrackPanelProps) => {
+    const classes = useStyles();
+
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     const offset = useRef<number>(25);
@@ -65,7 +81,7 @@ const MidiTrackPanel = ({
             ctx.clearRect(0, 0, canvasWidth.current, canvasHeight.current);
 
             //ticker
-            ctx.fillStyle = "orange";
+            ctx.fillStyle = "indigo";
             ctx.fillRect(
                 offset.current + (pointer.current / midiInformation.totalLength) * trackWidth.current,
                 0,
@@ -108,9 +124,28 @@ const MidiTrackPanel = ({
                     <input
                         type="file"
                         accept="audio/midi, audio/mid"
+                        id="midi-upload"
+                        hidden
                         onChange={(event) => readMidiUri(event)}
                         disabled={!soundFontLoaded || isRecording || isPreviewPlaying}
                     ></input>
+
+                    <label htmlFor="midi-upload" style={{ cursor: "pointer" }}>
+                        <Fab
+                            variant="extended"
+                            size="medium"
+                            color="secondary"
+                            aria-label="upload"
+                            style={{ pointerEvents: "none" }}
+                            className={classes.margin}
+                        >
+                            <BackupIcon className={classes.extendedIcon} />
+                            Upload MIDI
+                        </Fab>
+                    </label>
+
+                    {fileName ? <Typography variant="subtitle2">{fileName}</Typography> : null}
+
                     <br />
                     <div style={{ margin: "1em" }}>
                         <canvas
@@ -130,46 +165,78 @@ const MidiTrackPanel = ({
                             minWidth: "750px",
                         }}
                     >
-                        <Range
+                        <Slider
+                            value={[config.startTime, config.endTime]}
                             defaultValue={[0, 0]}
-                            allowCross={false}
-                            disabled={isRecording}
+                            color="primary"
                             min={0}
                             max={midiInformation.totalLength}
-                            value={[config.startTime, config.endTime]}
-                            onChange={(value: number[]) => {
+                            onChange={(_, newRange) => {
+                                const range: number[] = newRange as number[];
                                 setConfig({
-                                    startTime: value[0],
-                                    endTime: value[1],
+                                    startTime: range[0],
+                                    endTime: range[1],
                                 });
                             }}
+                            valueLabelDisplay="auto"
                         />
-                        <Typography variant="subtitle2">Start Time: {config.startTime}</Typography>
-                        <Typography variant="subtitle2">End Time: {config.endTime}</Typography>
+                        <Grid container justifyContent="space-between" spacing={1} alignItems="center" direction="row">
+                            <Grid item key={0}>
+                                <Typography variant="subtitle2">Start: {Number(config.startTime).toFixed(2)} s</Typography>
+                            </Grid>
+                            <Grid item key={1}>
+                                <Typography variant="subtitle2">End: {Number(config.endTime).toFixed(2)} s</Typography>
+                            </Grid>
+                        </Grid>
                     </div>
                     <br />
-                    <IconButton onClick={() => allowMicrophoneAccess()} disabled={hasMicrophoneAccess}>
-                        <MicIcon color={hasMicrophoneAccess ? "disabled" : "secondary"} />
-                    </IconButton>
+                    {!hasMicrophoneAccess ? (
+                        <Fab
+                            variant="extended"
+                            size="medium"
+                            color="secondary"
+                            aria-label="upload"
+                            className={classes.margin}
+                            onClick={() => allowMicrophoneAccess()}
+                            disabled={hasMicrophoneAccess}
+                        >
+                            <MicIcon
+                                className={classes.extendedIcon}
+                                color={hasMicrophoneAccess ? "disabled" : "inherit"}
+                            />
+                            Grant Microphone Permission
+                        </Fab>
+                    ) : null}
                     <br />
                     <br />
                     <Grid container justifyContent="center" spacing={1} alignItems="center" direction="row">
-                        <Grid item key={0}>
-                            <IconButton
+                        {!isRecording ? (
+                            <Fab
+                                variant="extended"
+                                size="medium"
+                                color="secondary"
+                                aria-label="upload"
+                                className={classes.margin}
                                 onClick={() => startRecording()}
                                 disabled={!midiLoaded || isRecording || !hasMicrophoneAccess}
                             >
-                                <FiberManualRecordIcon />
-                            </IconButton>
-                        </Grid>
-                        <Grid item key={1}>
-                            <IconButton
+                                <FiberManualRecordIcon className={classes.extendedIcon} />
+                                Start Recording
+                            </Fab>
+                        ) : (
+                            <Fab
+                                variant="extended"
+                                size="medium"
+                                color="secondary"
+                                aria-label="upload"
+                                className={classes.margin}
                                 onClick={() => stopRecording()}
                                 disabled={!midiLoaded || !isRecording || !hasMicrophoneAccess}
                             >
-                                <StopIcon />
-                            </IconButton>
-                        </Grid>
+                                <StopIcon className={classes.extendedIcon} />
+                                Stop Recording
+                            </Fab>
+                        )}
                     </Grid>
                 </Grid>
             </Paper>

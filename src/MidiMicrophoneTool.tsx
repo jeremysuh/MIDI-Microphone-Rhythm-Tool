@@ -73,6 +73,8 @@ function MidiMicrophoneTool() {
     const [allWorkspaces, setAllWorkspaces] = useState<WorkSpace[]>([]);
     const [canCreateWorkspace, setCanCreateWorkspace] = useState<boolean>(false);
 
+    const [fileName, setFileName] = useState<string | null>(null);
+
     const [midiInformation, setMidiInformation] = useState<MidiInformation>({
         totalLength: 0,
     });
@@ -201,7 +203,9 @@ function MidiMicrophoneTool() {
         if (event.target.files.length !== 1) return;
 
         const file = event.target.files[0];
+
         if (file === undefined || file === null) return;
+        setFileName(file.name);
 
         const fileExtension = file.name.split(".").pop();
         if (
@@ -229,7 +233,7 @@ function MidiMicrophoneTool() {
     );
 
     const startRecording = () => {
-        if (isRecording || mediaRecorder.current === null) return;
+         if (isRecording || mediaRecorder.current === null) return;
         mediaRecorder.current.start();
         console.log(mediaRecorder.current.state);
         player.current.skipToSeconds(config.startTime).play();
@@ -369,6 +373,7 @@ function MidiMicrophoneTool() {
                     startRecording={startRecording}
                     stopRecording={stopRecording}
                     pointer={pointer}
+                    fileName={fileName}
                 />
                 <br />
                 {recordingSessions.map((session, index) => {
