@@ -366,6 +366,7 @@ function MidiMicrophoneTool() {
                     hasMicrophoneAccess={hasMicrophoneAccess}
                     startRecording={startRecording}
                     stopRecording={stopRecording}
+                    pointer={pointer}
                 />
                 <br />
                 {recordingSessions.map((session, index) => {

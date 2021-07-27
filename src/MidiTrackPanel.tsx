@@ -25,6 +25,7 @@ interface MidiTrackPanelProps {
     hasMicrophoneAccess: boolean;
     startRecording: Function;
     stopRecording: Function;
+    pointer: any;
 }
 
 const MidiTrackPanel = ({
@@ -40,28 +41,69 @@ const MidiTrackPanel = ({
     hasMicrophoneAccess,
     startRecording,
     stopRecording,
+    pointer,
 }: MidiTrackPanelProps) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const x = useRef<number>(0);
+
+    const offset = useRef<number>(25);
+
+    const canvasWidth = useRef<number>(800);
+    const canvasHeight = useRef<number>(150);
+
+    const trackWidth = useRef<number>(750);
+    const trackHeight = useRef<number>(150);
+
     //const y = useRef<number>(0)
 
-    useAnimationFrame(() => {
-        if (canvasRef.current === null) return;
+    useAnimationFrame(
+        (delta: number) => {
+            if (canvasRef.current === null) return;
 
-        const ctx = canvasRef.current.getContext("2d");
-        if (ctx === null || ctx === undefined) return;
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx === null || ctx === undefined) return;
 
-        ctx.clearRect(0, 0, 600, 150);
+            ctx.clearRect(0, 0, canvasWidth.current, canvasHeight.current);
 
-        ctx.fillStyle = "#2d2d2d";
-        ctx.fillRect(10 + x.current, 10, 150, 100);
+            //ticker
+            ctx.fillStyle = "orange";
+            ctx.fillRect(
+                offset.current + (pointer.current / midiInformation.totalLength) * trackWidth.current,
+                0,
+                1,
+                150
+            );
 
-        x.current += 0.1;
-    }, [canvasRef]);
+            //main track line
+            ctx.fillStyle = "black";
+            ctx.fillRect(25, 74, 750, 2);
+
+            //start range
+            ctx.fillStyle = "rgba(155, 155, 155, 0.4)";
+            ctx.fillRect(
+                0,
+                0,
+                offset.current + (config.startTime / midiInformation.totalLength) * trackWidth.current,
+                trackHeight.current
+            );
+
+            //end range
+            ctx.fillStyle = "rgba(155, 155, 155, 0.4)";
+            ctx.fillRect(
+                canvasWidth.current -
+                    offset.current -
+                    ((midiInformation.totalLength - config.endTime) / midiInformation.totalLength) * trackWidth.current,
+                0,
+                offset.current +
+                    ((midiInformation.totalLength - config.endTime) / midiInformation.totalLength) * trackWidth.current,
+                trackHeight.current
+            );
+        },
+        [canvasRef]
+    );
 
     return (
         <div style={{ margin: "1em" }}>
-            <Paper elevation={2} style={{ padding: "1em", minWidth: "50vw" }}>
+            <Paper elevation={2} style={{ padding: "1em", minWidth: "60vw" }}>
                 <Grid container justifyContent="space-between" spacing={1} alignItems="center" direction="column">
                     <input
                         type="file"
@@ -74,7 +116,7 @@ const MidiTrackPanel = ({
                         <canvas
                             id="canvas"
                             ref={canvasRef}
-                            width="600px"
+                            width="800px"
                             height="150px"
                             style={{ backgroundColor: "lightgrey" }}
                         ></canvas>
@@ -85,7 +127,7 @@ const MidiTrackPanel = ({
                             justifyContent: "center",
                             flexDirection: "column",
                             alignItems: "center",
-                            minWidth: "50%",
+                            minWidth: "750px",
                         }}
                     >
                         <Range
