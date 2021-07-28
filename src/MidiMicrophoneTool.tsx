@@ -32,6 +32,7 @@ type MidiMetaData = {
 };
 
 type Comment = {
+    id: string;
     time: number[];
     text: string;
 };
@@ -88,6 +89,8 @@ function MidiMicrophoneTool() {
         time: number[];
     }
     const [recordingSessions, setRecordingSession] = useState<RecordingSession[]>([]);
+
+    const [selectedCommentId, setSelectedCommentId] = useState<string>("");
 
     const allowMicrophoneAccess = () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -181,6 +184,7 @@ function MidiMicrophoneTool() {
     useEffect(() => {
         fileReader.current.onload = () => {
             const result: string | ArrayBuffer | null = fileReader.current.result;
+            setSelectedCommentId(""); //reset; not sure if this is the right place
             if (result === null) return;
             if (typeof result === "string") {
                 setMidiUri(result);
@@ -233,7 +237,7 @@ function MidiMicrophoneTool() {
     );
 
     const startRecording = () => {
-         if (isRecording || mediaRecorder.current === null) return;
+        if (isRecording || mediaRecorder.current === null) return;
         mediaRecorder.current.start();
         console.log(mediaRecorder.current.state);
         player.current.skipToSeconds(config.startTime).play();
@@ -245,7 +249,7 @@ function MidiMicrophoneTool() {
 
         const newRecordingSessions = recordingSessions.slice();
         if (newRecordingSessions.length > 0) newRecordingSessions.pop(); // adjust accordingly once multiple refs/audio at once is involved
-        newRecordingSessions.push({ time: [config.startTime, Math.round(pointer.current * 10) /10] }); //right now, only one session max
+        newRecordingSessions.push({ time: [config.startTime, Math.round(pointer.current * 10) / 10] }); //right now, only one session max
         setRecordingSession(newRecordingSessions);
 
         console.log(mediaRecorder.current.state);
@@ -261,8 +265,7 @@ function MidiMicrophoneTool() {
         player.current.skipToSeconds(recordingSessions[0].time[0] + audioRef.current.currentTime).play(); //update when multiple sessions are added
         //player.current.skipToSeconds(config.startTime + audioRef.current.currentTime).play();
         setIsPreviewPlaying(true);
-        console.log("play preview")
-
+        console.log("play preview");
     };
 
     const pausePreview = () => {
@@ -272,16 +275,15 @@ function MidiMicrophoneTool() {
         audioRef.current.pause();
         player.current.pause();
         setIsPreviewPlaying(false);
-        console.log("pause preview")
-
+        console.log("pause preview");
     };
 
-    const seekPreview = (time : number) => {
+    const seekPreview = (time: number) => {
         if (audioRef.current === null) return;
         if (recordingSessions.length === 0) return;
         player.current.skipToSeconds(recordingSessions[0].time[0] + audioRef.current.currentTime).play(); //update when multiple sessions are added
-        console.log("seek preview")
-    }
+        console.log("seek preview");
+    };
 
     const stopPreview = () => {
         if (audioRef.current === null) return;
@@ -291,7 +293,7 @@ function MidiMicrophoneTool() {
         player.current.stop();
         setIsPreviewPlaying(false);
         audioRef.current.removeEventListener("ended", stopPreview);
-        console.log("stopped preview")
+        console.log("stopped preview");
     };
 
     const onCreateWorkspace = () => {
@@ -305,8 +307,7 @@ function MidiMicrophoneTool() {
         const newWorkspace: WorkSpace = {
             id: uuid,
             name: `${fileName} Workspace`,
-            comments: [
-            ],
+            comments: [],
             midiMetaData: {
                 name: midiJSON.header.name,
                 ppq: midiJSON.header.ppq,
@@ -338,9 +339,46 @@ function MidiMicrophoneTool() {
         const newWorkspaces = allWorkspaces.slice();
         const index = newWorkspaces.findIndex((workspace) => workspaceId === workspace.id);
         newWorkspaces[index].comments.push({
+            id: uuidv4(),
             time: time,
             text: comment,
         });
+        setAllWorkspaces(newWorkspaces);
+    };
+
+    const selectComment = (id: string) => {
+        setSelectedCommentId(id);
+    };
+
+    const deleteComment = (commentId: string, workspaceId: string) => {
+        const workspaceIndex = allWorkspaces.findIndex((workspace) => workspace.id === workspaceId);
+        if (workspaceIndex === -1) return;
+
+        const newWorkspaces = allWorkspaces.slice();
+
+        let newComments = newWorkspaces[workspaceIndex].comments.slice();
+        newComments = newComments.filter((comment) => comment.id !== commentId);
+
+        newWorkspaces[workspaceIndex].comments = newComments;
+
+        setAllWorkspaces(newWorkspaces);
+    };
+
+    const editComment = (commentId: string, workspaceId: string, newText: string) => {
+        const workspaceIndex = allWorkspaces.findIndex((workspace) => workspace.id === workspaceId);
+        if (workspaceIndex === -1) return;
+
+        const newWorkspaces = allWorkspaces.slice();
+
+        let newComments = newWorkspaces[workspaceIndex].comments.slice();
+
+        const commentIndex = newComments.findIndex((comment) => comment.id === commentId);
+        if (commentIndex === -1) return;
+
+        newComments[commentIndex].text = newText;
+
+        newWorkspaces[workspaceIndex].comments = newComments;
+
         setAllWorkspaces(newWorkspaces);
     };
 
@@ -357,6 +395,10 @@ function MidiMicrophoneTool() {
               tracksCount: midiJSON.tracks.length,
               bpm: midiJSON.header.tempos[0] ? midiJSON.header.tempos[0].bpm : 0,
           }
+        : null;
+
+    const selectedComment = currentWorkspace
+        ? currentWorkspace.comments.find((comment) => comment.id === selectedCommentId)
         : null;
 
     return (
@@ -379,6 +421,7 @@ function MidiMicrophoneTool() {
                     pointer={pointer}
                     fileName={fileName}
                     midiJSON={midiJSON}
+                    selectedComment={selectedComment}
                 />
                 <br />
                 {recordingSessions.map((session, index) => {
@@ -402,7 +445,15 @@ function MidiMicrophoneTool() {
                     );
                 })}
 
-                <WorkspaceDetails currentWorkspace={currentWorkspace} onCreateWorkspace={onCreateWorkspace} canCreateWorkspace={canCreateWorkspace}/>
+                <WorkspaceDetails
+                    currentWorkspace={currentWorkspace}
+                    onCreateWorkspace={onCreateWorkspace}
+                    canCreateWorkspace={canCreateWorkspace}
+                    selectComment={selectComment}
+                    editComment={editComment}
+                    deleteComment={deleteComment}
+                    selectedComment={selectedComment}
+                />
                 <WorkspacesList
                     changeWorkspaceTo={changeWorkspaceTo}
                     allWorkspaces={allWorkspaces}

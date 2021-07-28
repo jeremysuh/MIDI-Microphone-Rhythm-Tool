@@ -53,6 +53,7 @@ interface MidiTrackPanelProps {
     pointer: any;
     fileName: string | null;
     midiJSON: any;
+    selectedComment: any;
 }
 
 const MidiTrackPanel = ({
@@ -71,6 +72,7 @@ const MidiTrackPanel = ({
     pointer,
     fileName,
     midiJSON,
+    selectedComment,
 }: MidiTrackPanelProps) => {
     const classes = useStyles();
 
@@ -123,39 +125,10 @@ const MidiTrackPanel = ({
 
             ctx.clearRect(0, 0, canvasWidth.current, canvasHeight.current);
 
-            //ticker
-            ctx.fillStyle = "indigo";
-            ctx.fillRect(
-                offset.current + (pointer.current / midiInformation.totalLength) * trackWidth.current,
-                0,
-                1,
-                150
-            );
 
             //main track line
             ctx.fillStyle = "black";
             ctx.fillRect(25, 74, 750, 2);
-
-            //start range
-            ctx.fillStyle = "rgba(155, 155, 155, 0.4)";
-            ctx.fillRect(
-                0,
-                0,
-                offset.current + (config.startTime / midiInformation.totalLength) * trackWidth.current,
-                trackHeight.current
-            );
-
-            //end range
-            ctx.fillStyle = "rgba(155, 155, 155, 0.4)";
-            ctx.fillRect(
-                canvasWidth.current -
-                    offset.current -
-                    ((midiInformation.totalLength - config.endTime) / midiInformation.totalLength) * trackWidth.current,
-                0,
-                offset.current +
-                    ((midiInformation.totalLength - config.endTime) / midiInformation.totalLength) * trackWidth.current,
-                trackHeight.current
-            );
 
             //draw individiual notes
             if (trackDetail) {
@@ -183,8 +156,51 @@ const MidiTrackPanel = ({
                     ctx.fillRect(offset.current + i, yOffset, 1, lineHeight);
                 }
             }
+
+            //start range
+            ctx.fillStyle = "rgba(155, 155, 155, 0.4)";
+            ctx.fillRect(
+                0,
+                0,
+                offset.current + (config.startTime / midiInformation.totalLength) * trackWidth.current,
+                trackHeight.current
+            );
+
+            //end range
+            ctx.fillStyle = "rgba(155, 155, 155, 0.4)";
+            ctx.fillRect(
+                canvasWidth.current -
+                    offset.current -
+                    ((midiInformation.totalLength - config.endTime) / midiInformation.totalLength) * trackWidth.current,
+                0,
+                offset.current +
+                    ((midiInformation.totalLength - config.endTime) / midiInformation.totalLength) * trackWidth.current,
+                trackHeight.current
+            );
+
+            //selected comment marking
+            if (selectedComment) {
+                ctx.fillStyle = "rgba(255, 77, 77, 0.4)";
+                ctx.fillRect(
+                    offset.current + (selectedComment.time[0] / midiInformation.totalLength) * trackWidth.current,
+                    0,
+                        ((selectedComment.time[1] - selectedComment.time[0]) / midiInformation.totalLength) *
+                            trackWidth.current,
+ 
+                    trackHeight.current
+                );
+            }
+            
+            //ticker
+            ctx.fillStyle = "indigo";
+            ctx.fillRect(
+                offset.current + (pointer.current / midiInformation.totalLength) * trackWidth.current,
+                0,
+                1,
+                150
+            );
         },
-        [canvasRef, midiLoaded, trackDetail]
+        [canvasRef, midiLoaded, trackDetail, selectedComment]
     );
 
     return (
