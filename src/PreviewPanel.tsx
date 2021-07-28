@@ -1,6 +1,6 @@
 // import { useRef, useState } from "react";
 
-import Slider from "@material-ui/core/Slider";
+//import Slider from "@material-ui/core/Slider";
 import { useEffect, useState } from "react";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
@@ -121,7 +121,7 @@ const PreviewPanel = ({
                                                     <source src={audioSrc as string} type="audio/ogg" />
                                                 </audio>
                                             </div>
-                                            <Slider
+                                            {/* <Slider
                                                 value={[time[0], time[1]]}
                                                 color="secondary"
                                                 min={timeRange[0]}
@@ -130,7 +130,8 @@ const PreviewPanel = ({
                                                 onChange={(_, newRange) => setTime(newRange as number[])}
                                                 valueLabelDisplay="auto"
                                                 style={{ minWidth: "15vw" }}
-                                            />
+                                            /> */} 
+                                            {/* will hide above until a working scrubbable player is made */}
                                             <Grid
                                                 container
                                                 justifyContent="space-between"
@@ -140,12 +141,12 @@ const PreviewPanel = ({
                                             >
                                                 <Grid item key={0}>
                                                     <Typography variant="subtitle2">
-                                                        Start: {Number(time[0]).toFixed(2)} s
+                                                        Start: {Number(time[0]).toFixed(2)}s
                                                     </Typography>
                                                 </Grid>
                                                 <Grid item key={1}>
                                                     <Typography variant="subtitle2">
-                                                        End: {Number(time[1]).toFixed(2)} s
+                                                        End: {Number(time[1]).toFixed(2)}s
                                                     </Typography>
                                                 </Grid>
                                             </Grid>
