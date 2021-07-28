@@ -6,7 +6,7 @@ import { Midi, MidiJSON } from "@tonejs/midi";
 import { v4 as uuidv4 } from "uuid";
 import * as MidiPlayerJS from "./midi-player-js/player";
 import { useAnimationFrame } from "./CustomHooks";
-import { CreateWorkspaceButton, WorkspacesList } from "./WorkspacesList";
+import { WorkspacesList } from "./WorkspacesList";
 import { WorkspaceDetails } from "./WorkspaceDetails";
 import { PreviewPanel } from "./PreviewPanel";
 import { MidiTrackPanel } from "./MidiTrackPanel";
@@ -245,7 +245,7 @@ function MidiMicrophoneTool() {
 
         const newRecordingSessions = recordingSessions.slice();
         if (newRecordingSessions.length > 0) newRecordingSessions.pop(); // adjust accordingly once multiple refs/audio at once is involved
-        newRecordingSessions.push({ time: [config.startTime, config.endTime] }); //right now, only one session max
+        newRecordingSessions.push({ time: [config.startTime, Math.round(pointer.current * 10) /10] }); //right now, only one session max
         setRecordingSession(newRecordingSessions);
 
         console.log(mediaRecorder.current.state);
@@ -261,6 +261,8 @@ function MidiMicrophoneTool() {
         player.current.skipToSeconds(recordingSessions[0].time[0] + audioRef.current.currentTime).play(); //update when multiple sessions are added
         //player.current.skipToSeconds(config.startTime + audioRef.current.currentTime).play();
         setIsPreviewPlaying(true);
+        console.log("play preview")
+
     };
 
     const pausePreview = () => {
@@ -270,16 +272,26 @@ function MidiMicrophoneTool() {
         audioRef.current.pause();
         player.current.pause();
         setIsPreviewPlaying(false);
+        console.log("pause preview")
+
     };
+
+    const seekPreview = (time : number) => {
+        if (audioRef.current === null) return;
+        if (recordingSessions.length === 0) return;
+        player.current.skipToSeconds(recordingSessions[0].time[0] + audioRef.current.currentTime).play(); //update when multiple sessions are added
+        console.log("seek preview")
+    }
 
     const stopPreview = () => {
         if (audioRef.current === null) return;
         if (!player.current.isPlaying()) return;
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
-        audioRef.current.removeEventListener("ended", stopPreview);
         player.current.stop();
         setIsPreviewPlaying(false);
+        audioRef.current.removeEventListener("ended", stopPreview);
+        console.log("stopped preview")
     };
 
     const onCreateWorkspace = () => {
@@ -292,16 +304,8 @@ function MidiMicrophoneTool() {
 
         const newWorkspace: WorkSpace = {
             id: uuid,
-            name: `Workspace: ${uuid}`,
+            name: `${fileName} Workspace`,
             comments: [
-                {
-                    time: [Math.round(10 * Math.random()), Math.round(10 * Math.random()) + 30],
-                    text: "sample",
-                },
-                {
-                    time: [Math.round(10 * Math.random()), Math.round(10 * Math.random()) + 30],
-                    text: "sample2",
-                },
             ],
             midiMetaData: {
                 name: midiJSON.header.name,
@@ -392,12 +396,12 @@ function MidiMicrophoneTool() {
                             timeRange={session.time}
                             midiInformation={midiInformation}
                             addCommentToWorkspace={addCommentToWorkspace}
+                            seekPreview={seekPreview}
                         />
                     );
                 })}
 
-                <CreateWorkspaceButton canCreateWorkspace={canCreateWorkspace} onCreateWorkspace={onCreateWorkspace} />
-                <WorkspaceDetails currentWorkspace={currentWorkspace} />
+                <WorkspaceDetails currentWorkspace={currentWorkspace} onCreateWorkspace={onCreateWorkspace} canCreateWorkspace={canCreateWorkspace}/>
                 <WorkspacesList
                     changeWorkspaceTo={changeWorkspaceTo}
                     allWorkspaces={allWorkspaces}

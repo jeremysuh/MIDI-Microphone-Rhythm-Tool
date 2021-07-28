@@ -1,22 +1,14 @@
 // import { useRef, useState } from "react";
-
-import Fab from "@material-ui/core/Fab";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import Typography from "@material-ui/core/Typography";
-import AddIcon from "@material-ui/icons/Add";
-import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
- 
+import Button from "@material-ui/core/Button";
+import ListAltIcon from '@material-ui/icons/ListAlt';
 interface WorkspacesListProps {
     allWorkspaces: any[];
     changeWorkspaceTo: Function;
     loadedMidiMetaData: MidiMetaData | null;
-}
-
-interface CreateWorkspaceButtonProps {
-    canCreateWorkspace: boolean;
-    onCreateWorkspace: Function;
 }
 
 type MidiMetaData = {
@@ -27,33 +19,6 @@ type MidiMetaData = {
     ticksCount: number;
     tracksCount: number;
     bpm: number;
-};
-
-const CreateWorkspaceButton = ({ canCreateWorkspace, onCreateWorkspace }: CreateWorkspaceButtonProps) => {
-    const fabStyle = {
-        margin: 0,
-        top: "auto",
-        right: 20,
-        bottom: 20,
-        left: "auto",
-        position: "fixed",
-    };
-
-    return (
-        <div>
-            <Fab
-                variant="extended"
-                color="secondary"
-                aria-label="add"
-                disabled={!canCreateWorkspace}
-                onClick={() => onCreateWorkspace()}
-                style={fabStyle as any}
-            >
-                <AddIcon style={{ marginRight: "4px" }} />
-                <Typography style={{ marginLeft: "4px", marginRight: "4px" }}>Create Workspace</Typography>
-            </Fab>
-        </div>
-    );
 };
 
 const WorkspacesList = ({ allWorkspaces, changeWorkspaceTo, loadedMidiMetaData }: WorkspacesListProps) => {
@@ -72,30 +37,27 @@ const WorkspacesList = ({ allWorkspaces, changeWorkspaceTo, loadedMidiMetaData }
 
     return (
         <div style={{ margin: "16px" }}>
-            <Paper elevation={2} style={{ padding: "1em", minWidth: "50vw" }}>
-                <Grid container justifyContent="space-between" spacing={1} alignItems="center" direction="column">
+                 <Grid container justifyContent="space-between" spacing={1} alignItems="center" direction="column">
             <Typography variant="h6">All Workspaces:</Typography>
             {
                 <List>
                     {allWorkspaces.map((workspace) => {
                         return (
                             <ListItem
-                                button
                                 key={workspace.id}
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: "pointer"}}
                                 onClick={() => changeWorkspaceTo(workspace.id)}
                                 disabled={matchesLoadedMidiMetaData(workspace.midiMetaData) === false}
                             >
-                                {workspace.name}
+                                <Button variant="contained"color="primary" style={{minWidth: "32vw"}} startIcon={<ListAltIcon />}>{workspace.name}</Button>
                              </ListItem>
                         );
                     })}
                 </List>
             }
             </Grid>
-            </Paper>
-        </div>
+         </div>
     );
 };
 
-export { WorkspacesList, CreateWorkspaceButton };
+export { WorkspacesList };
