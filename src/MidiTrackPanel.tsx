@@ -173,6 +173,15 @@ const MidiTrackPanel = ({
 
                     ctx.fillRect(xPos, yOffset, 1, lineHeight);
                 }
+            } else {
+                //blank template notes visual
+                ctx.fillStyle = "grey";
+
+                for (let i = 0; i < trackWidth.current; i += 10) {
+                    const lineHeight = (trackHeight.current - 50) * Math.sin(i / 80);
+                    const yOffset = (trackHeight.current - lineHeight) / 2;
+                    ctx.fillRect(offset.current + i, yOffset, 1, lineHeight);
+                }
             }
         },
         [canvasRef, midiLoaded, trackDetail]
