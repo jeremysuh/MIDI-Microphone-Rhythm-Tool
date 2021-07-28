@@ -328,7 +328,7 @@ function MidiMicrophoneTool() {
         setCanCreateWorkspace(false);
     };
 
-    const deleteWorkSpace = (id : string) => {
+    const deleteWorkSpace = (id: string) => {
         const workspaceIndex = allWorkspaces.findIndex((workspace) => workspace.id === id);
         if (workspaceIndex === -1) return;
 
@@ -336,8 +336,8 @@ function MidiMicrophoneTool() {
         newWorkspaces = newWorkspaces.filter((workspace) => workspace.id !== id);
 
         if (currentWorkspace && currentWorkspace.id === id) setCurrentWorkspace(null);
-        setAllWorkspaces(newWorkspaces)
-    }
+        setAllWorkspaces(newWorkspaces);
+    };
 
     const changeWorkspaceTo = (id: string) => {
         if (currentWorkspace && currentWorkspace.id === id) return;

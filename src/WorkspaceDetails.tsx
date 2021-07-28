@@ -67,7 +67,7 @@ const WorkspaceDetails = ({
     selectedComment,
 }: WorkspaceDetailsProps) => {
     const [editModeOn, setEditModeOn] = useState<boolean>(false);
-    const [editTextValue, setEditTextValue] = useState<string>("")
+    const [editTextValue, setEditTextValue] = useState<string>("");
 
     return (
         <div>
@@ -159,10 +159,10 @@ const WorkspaceDetails = ({
                                     aria-label="edit"
                                     onClick={() => {
                                         if (editModeOn) {
-                                            editComment(selectedComment.id, currentWorkspace.id, editTextValue)
+                                            editComment(selectedComment.id, currentWorkspace.id, editTextValue);
                                             setEditModeOn(false); //save text here
-                                        }else{
-                                            setEditTextValue(selectedComment.text)
+                                        } else {
+                                            setEditTextValue(selectedComment.text);
                                             setEditModeOn(true);
                                         }
                                     }}

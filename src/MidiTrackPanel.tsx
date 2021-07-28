@@ -125,7 +125,6 @@ const MidiTrackPanel = ({
 
             ctx.clearRect(0, 0, canvasWidth.current, canvasHeight.current);
 
-
             //main track line
             ctx.fillStyle = "black";
             ctx.fillRect(25, 74, 750, 2);
@@ -184,13 +183,13 @@ const MidiTrackPanel = ({
                 ctx.fillRect(
                     offset.current + (selectedComment.time[0] / midiInformation.totalLength) * trackWidth.current,
                     0,
-                        ((selectedComment.time[1] - selectedComment.time[0]) / midiInformation.totalLength) *
-                            trackWidth.current,
- 
+                    ((selectedComment.time[1] - selectedComment.time[0]) / midiInformation.totalLength) *
+                        trackWidth.current,
+
                     trackHeight.current
                 );
             }
-            
+
             //ticker
             ctx.fillStyle = "indigo";
             ctx.fillRect(
