@@ -328,6 +328,17 @@ function MidiMicrophoneTool() {
         setCanCreateWorkspace(false);
     };
 
+    const deleteWorkSpace = (id : string) => {
+        const workspaceIndex = allWorkspaces.findIndex((workspace) => workspace.id === id);
+        if (workspaceIndex === -1) return;
+
+        let newWorkspaces = allWorkspaces.slice();
+        newWorkspaces = newWorkspaces.filter((workspace) => workspace.id !== id);
+
+        if (currentWorkspace && currentWorkspace.id === id) setCurrentWorkspace(null);
+        setAllWorkspaces(newWorkspaces)
+    }
+
     const changeWorkspaceTo = (id: string) => {
         if (currentWorkspace && currentWorkspace.id === id) return;
         const workspaceIndex = allWorkspaces.findIndex((workspace) => workspace.id === id);
@@ -458,6 +469,7 @@ function MidiMicrophoneTool() {
                     changeWorkspaceTo={changeWorkspaceTo}
                     allWorkspaces={allWorkspaces}
                     loadedMidiMetaData={loadedMidiMetaData}
+                    deleteWorkSpace={deleteWorkSpace}
                 />
             </div>
         </div>
