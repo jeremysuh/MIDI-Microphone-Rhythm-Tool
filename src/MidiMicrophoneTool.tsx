@@ -378,6 +378,7 @@ function MidiMicrophoneTool() {
                     stopRecording={stopRecording}
                     pointer={pointer}
                     fileName={fileName}
+                    midiJSON={midiJSON}
                 />
                 <br />
                 {recordingSessions.map((session, index) => {

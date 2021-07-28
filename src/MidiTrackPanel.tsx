@@ -12,6 +12,8 @@ import { useAnimationFrame } from "./CustomHooks";
 import Fab from "@material-ui/core/Fab";
 import BackupIcon from "@material-ui/icons/Backup";
 import Slider from "@material-ui/core/Slider";
+import { useMemo } from "react";
+var Rainbow = require("rainbowvis.js");
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -20,9 +22,20 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         extendedIcon: {
             marginRight: theme.spacing(1),
-        }, 
+        },
     })
 );
+
+interface Note {
+    time: number;
+    velocity: number;
+    duration: number;
+}
+
+interface TrackDetail {
+    notes: Note[];
+    maxVelocity: number;
+}
 
 interface MidiTrackPanelProps {
     soundFontLoaded: boolean;
@@ -39,6 +52,7 @@ interface MidiTrackPanelProps {
     stopRecording: Function;
     pointer: any;
     fileName: string | null;
+    midiJSON: any;
 }
 
 const MidiTrackPanel = ({
@@ -56,6 +70,7 @@ const MidiTrackPanel = ({
     stopRecording,
     pointer,
     fileName,
+    midiJSON,
 }: MidiTrackPanelProps) => {
     const classes = useStyles();
 
@@ -68,6 +83,34 @@ const MidiTrackPanel = ({
 
     const trackWidth = useRef<number>(750);
     const trackHeight = useRef<number>(150);
+
+    const rainbowColor = useRef<any>(new Rainbow());
+
+    const trackDetail = useMemo(() => {
+        if (!midiJSON) return null;
+
+        if (midiJSON.tracks.length === 0) return null;
+
+        const result: TrackDetail = {
+            maxVelocity: 0,
+            notes: [],
+        };
+
+        for (const track of midiJSON.tracks) {
+            for (const note of track.notes) {
+                result.maxVelocity = Math.max(note.velocity, result.maxVelocity);
+                result.notes.push({
+                    time: note.time,
+                    velocity: note.velocity,
+                    duration: note.duration,
+                });
+            }
+        }
+
+        console.log(result);
+
+        return result;
+    }, [midiJSON]);
 
     //const y = useRef<number>(0)
 
@@ -113,8 +156,26 @@ const MidiTrackPanel = ({
                     ((midiInformation.totalLength - config.endTime) / midiInformation.totalLength) * trackWidth.current,
                 trackHeight.current
             );
+
+            //draw individiual notes
+            if (trackDetail) {
+                for (let note of trackDetail.notes) {
+                    ctx.fillStyle = `#${rainbowColor.current.colourAt(
+                        (note.time / midiInformation.totalLength) * 100
+                    )}`;
+
+                    const lineHeight = (note.velocity / trackDetail.maxVelocity) * (trackHeight.current - 50);
+                    const yOffset = (trackHeight.current - lineHeight) / 2;
+
+                    //some out of bounds drawing due to inconsistency with Tone.JS & MidiPlayerJS length determination
+                    let xPos = offset.current + (note.time / midiInformation.totalLength) * trackWidth.current;
+                    if (xPos > offset.current + trackWidth.current) xPos = offset.current + trackWidth.current;
+
+                    ctx.fillRect(xPos, yOffset, 1, lineHeight);
+                }
+            }
         },
-        [canvasRef, midiLoaded]
+        [canvasRef, midiLoaded, trackDetail]
     );
 
     return (
@@ -182,7 +243,9 @@ const MidiTrackPanel = ({
                         />
                         <Grid container justifyContent="space-between" spacing={1} alignItems="center" direction="row">
                             <Grid item key={0}>
-                                <Typography variant="subtitle2">Start: {Number(config.startTime).toFixed(2)} s</Typography>
+                                <Typography variant="subtitle2">
+                                    Start: {Number(config.startTime).toFixed(2)} s
+                                </Typography>
                             </Grid>
                             <Grid item key={1}>
                                 <Typography variant="subtitle2">End: {Number(config.endTime).toFixed(2)} s</Typography>
