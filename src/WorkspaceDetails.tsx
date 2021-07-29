@@ -67,7 +67,7 @@ const WorkspaceDetails = ({
     deleteComment,
     editComment,
     selectedComment,
-    addCommentToWorkspace, 
+    addCommentToWorkspace,
     config,
 }: WorkspaceDetailsProps) => {
     const [editModeOn, setEditModeOn] = useState<boolean>(false);
@@ -92,8 +92,8 @@ const WorkspaceDetails = ({
                             </div>
                         )}
                     </Grid>
-                    <Grid item key={1}>
-                        {currentWorkspace ? (
+                    {currentWorkspace ? (
+                        <Grid item key={1}>
                             <List
                                 style={{
                                     overflow: "scroll",
@@ -140,14 +140,16 @@ const WorkspaceDetails = ({
                                     );
                                 })}
                             </List>
-                        ) : null}
-                    </Grid>
+                        </Grid>
+                    ) : null}
 
-                    <Grid item key={3}>
-                        {currentWorkspace && currentWorkspace.comments.length === 0 ? (
+                    {currentWorkspace && currentWorkspace.comments.length === 0 ? (
+                        <Grid item key={3}>
                             <Typography variant="h5">No comments yet</Typography>
-                        ) : null}
-                        {selectedComment ? (
+                        </Grid>
+                    ) : null}
+                    {selectedComment ? (
+                        <Grid item key={3}>
                             <div>
                                 {editModeOn ? (
                                     <TextField
@@ -181,50 +183,58 @@ const WorkspaceDetails = ({
                                     <DeleteIcon />
                                 </IconButton>
                             </div>
-                        ) : null}
-                    </Grid>
-
-                    <Grid item key={4}>
-                        {
-                             currentWorkspace ?
-                        <Paper elevation={3} style={{padding: "1em"}}>
-                        <TextField
-                            id="comment"
-                            variant="outlined"
-                            required
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            style={{ margin: "4px" }}
-                        />
-                        <Fab
-                            variant="extended"
-                            size="medium"
-                            color="secondary"
-                            aria-label="upload"
-                            onClick={() => {
-                                addCommentToWorkspace(currentWorkspace.id, commentText, [config.startTime, config.endTime])
-                                setCommentText("")
-                            }
-                            }
-                            disabled={!currentWorkspace || commentText.length === 0}
-                        >
-                            <AddIcon />
-                            Add Comment
-                        </Fab>
-                        <br /> 
-                        <Grid container justifyContent="center" spacing={1} alignItems="center" direction="column">
-                            <Grid item key={0}>
-                                <Typography variant="subtitle2">Comment for: {Number(config.startTime).toFixed(2)}s to {Number(config.endTime).toFixed(2)}s</Typography>
-                            </Grid> 
-                            <Grid item key={1}>
-
-                            <Typography variant="subtitle1">Use track slider to adjust time</Typography>
-                            </Grid> 
-
                         </Grid>
-                        </Paper> : null
-}
-                    </Grid>
+                    ) : null}
+
+                    {currentWorkspace ? (
+                        <Grid item key={4}>
+                            <Paper elevation={3} style={{ padding: "1em" }}>
+                                <TextField
+                                    id="comment"
+                                    variant="outlined"
+                                    required
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    style={{ margin: "4px" }}
+                                />
+                                <Fab
+                                    variant="extended"
+                                    size="medium"
+                                    color="secondary"
+                                    aria-label="upload"
+                                    onClick={() => {
+                                        addCommentToWorkspace(currentWorkspace.id, commentText, [
+                                            config.startTime,
+                                            config.endTime,
+                                        ]);
+                                        setCommentText("");
+                                    }}
+                                    disabled={!currentWorkspace || commentText.length === 0}
+                                >
+                                    <AddIcon />
+                                    Add Comment
+                                </Fab>
+                                <br />
+                                <Grid
+                                    container
+                                    justifyContent="center"
+                                    spacing={1}
+                                    alignItems="center"
+                                    direction="column"
+                                >
+                                    <Grid item key={0}>
+                                        <Typography variant="subtitle2">
+                                            Comment for: {Number(config.startTime).toFixed(2)}s to{" "}
+                                            {Number(config.endTime).toFixed(2)}s
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item key={1}>
+                                        <Typography variant="subtitle1">Use track slider to adjust time</Typography>
+                                    </Grid>
+                                </Grid>
+                            </Paper>
+                        </Grid>
+                    ) : null}
                 </Grid>
             </Paper>
         </div>
