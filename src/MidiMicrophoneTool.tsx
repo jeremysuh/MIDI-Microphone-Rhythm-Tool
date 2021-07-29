@@ -60,7 +60,10 @@ function MidiMicrophoneTool() {
     const mediaStream = useRef<MediaStream | null>(null);
     const mediaRecorder = useRef<MediaRecorder | null>(null);
     const [hasMicrophoneAccess, setHasMicrophoneAccess] = useState<boolean>(false);
+    
     const [isRecording, setIsRecording] = useState<boolean>(false);
+    const [isListening, setIsListening] = useState<boolean>(false);
+
     const [isPreviewPlaying, setIsPreviewPlaying] = useState<boolean>(false);
 
     const [audioSrc, setAudioSrc] = useState<string | null>(null);
@@ -227,33 +230,40 @@ function MidiMicrophoneTool() {
         (deltaTime: number) => {
             // Pass on a function to the setter of the state
             // to make sure we always have the latest state
-            if (isRecording) {
+            if (isRecording || isListening) {
                 pointer.current += deltaTime / 1000;
-                if (pointer.current > config.endTime) stopRecording();
+                if (pointer.current > config.endTime) stopRecording(false);
             }
             //setCount(prevCount => (prevCount + deltaTime * 0.01) % 100)
         },
-        [isRecording, config]
+        [isRecording, config, isListening]
     );
 
-    const startRecording = () => {
+    const startRecording = (listenModeOnly : boolean) => { //fix function args later
         if (isRecording || mediaRecorder.current === null) return;
-        mediaRecorder.current.start();
         console.log(mediaRecorder.current.state);
         player.current.skipToSeconds(config.startTime).play();
+
+        if (listenModeOnly) setIsListening(true);
+        if (listenModeOnly === false)  mediaRecorder.current.start();
     };
 
-    const stopRecording = () => {
-        if (!isRecording || mediaRecorder.current === null) return;
+    const stopRecording = (listenModeOnly : boolean) => {
+        if ((!isRecording && !isListening) || mediaRecorder.current === null) return;
+
+        player.current.stop();
+        pointer.current = config.startTime;
+
+        if (listenModeOnly) setIsListening(false);
+
+        if (listenModeOnly === false) {
         mediaRecorder.current.stop();
 
         const newRecordingSessions = recordingSessions.slice();
         if (newRecordingSessions.length > 0) newRecordingSessions.pop(); // adjust accordingly once multiple refs/audio at once is involved
         newRecordingSessions.push({ time: [config.startTime, Math.round(pointer.current * 10) / 10] }); //right now, only one session max
         setRecordingSession(newRecordingSessions);
-
-        console.log(mediaRecorder.current.state);
-        player.current.stop();
+        }
     };
 
     const playPreview = () => {
@@ -433,6 +443,7 @@ function MidiMicrophoneTool() {
                     fileName={fileName}
                     midiJSON={midiJSON}
                     selectedComment={selectedComment}
+                    isListening={isListening}
                 />
                 <br />
                 {recordingSessions.map((session, index) => {

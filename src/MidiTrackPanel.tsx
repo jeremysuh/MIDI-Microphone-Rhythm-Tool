@@ -54,7 +54,8 @@ interface MidiTrackPanelProps {
     fileName: string | null;
     midiJSON: any;
     selectedComment: any;
-}
+    isListening : boolean;
+ }
 
 const MidiTrackPanel = ({
     soundFontLoaded,
@@ -73,7 +74,8 @@ const MidiTrackPanel = ({
     fileName,
     midiJSON,
     selectedComment,
-}: MidiTrackPanelProps) => {
+    isListening,
+ }: MidiTrackPanelProps) => {
     const classes = useStyles();
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -304,8 +306,8 @@ const MidiTrackPanel = ({
                                 color="secondary"
                                 aria-label="upload"
                                 className={classes.margin}
-                                onClick={() => startRecording()}
-                                disabled={!midiLoaded || isRecording || !hasMicrophoneAccess}
+                                onClick={() => startRecording(false)}
+                                disabled={!midiLoaded || isRecording || !hasMicrophoneAccess  || isListening}
                             >
                                 <FiberManualRecordIcon className={classes.extendedIcon} />
                                 Start Recording
@@ -317,11 +319,39 @@ const MidiTrackPanel = ({
                                 color="secondary"
                                 aria-label="upload"
                                 className={classes.margin}
-                                onClick={() => stopRecording()}
-                                disabled={!midiLoaded || !isRecording || !hasMicrophoneAccess}
+                                onClick={() => stopRecording(false)}
+                                disabled={!midiLoaded || !isRecording || !hasMicrophoneAccess || isListening}
                             >
                                 <StopIcon className={classes.extendedIcon} />
                                 Stop Recording
+                            </Fab>
+                        )}
+
+                        {!isListening ? (
+                            <Fab
+                                variant="extended"
+                                size="medium"
+                                color="secondary"
+                                aria-label="upload"
+                                className={classes.margin}
+                                onClick={() => startRecording(true)}
+                                disabled={!midiLoaded || isRecording || !hasMicrophoneAccess}
+                            >
+                                <FiberManualRecordIcon className={classes.extendedIcon} />
+                                Play MIDI
+                            </Fab>
+                        ) : (
+                            <Fab
+                                variant="extended"
+                                size="medium"
+                                color="secondary"
+                                aria-label="upload"
+                                className={classes.margin}
+                                onClick={() => stopRecording(true)}
+                                disabled={!midiLoaded || isRecording || !hasMicrophoneAccess}
+                            >
+                                <StopIcon className={classes.extendedIcon} />
+                                Stop MIDI
                             </Fab>
                         )}
                     </Grid>
