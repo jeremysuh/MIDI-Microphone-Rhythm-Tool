@@ -471,10 +471,12 @@ function MidiMicrophoneTool() {
                     currentWorkspace={currentWorkspace}
                     onCreateWorkspace={onCreateWorkspace}
                     canCreateWorkspace={canCreateWorkspace}
+                    addCommentToWorkspace={addCommentToWorkspace}
                     selectComment={selectComment}
                     editComment={editComment}
                     deleteComment={deleteComment}
                     selectedComment={selectedComment}
+                    config={config}
                 />
                 <WorkspacesList
                     changeWorkspaceTo={changeWorkspaceTo}
