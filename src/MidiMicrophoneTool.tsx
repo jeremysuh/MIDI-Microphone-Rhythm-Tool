@@ -38,6 +38,7 @@ type Comment = {
     id: string;
     time: number[];
     text: string;
+    workspaceId : string;
 };
 
 type WorkSpace = {
@@ -426,12 +427,38 @@ function MidiMicrophoneTool() {
     const addCommentToWorkspace = (workspaceId: string, comment: string, time: number[]) => {
         const newWorkspaces = allWorkspaces.slice();
         const index = newWorkspaces.findIndex((workspace) => workspaceId === workspace.id);
+
+        const uuid = uuidv4();
         newWorkspaces[index].comments.push({
-            id: uuidv4(),
+            id: uuid,
             time: time,
             text: comment,
+            workspaceId : newWorkspaces[index].id
         });
         setAllWorkspaces(newWorkspaces);
+
+        //save to backend
+        const url =
+            process.env.NODE_ENV === "production"
+                ? "https://midi-rhythm-tool-server.herokuapp.com/api/comment"
+                : "http://localhost:8080/api/comment";
+
+        if (authenticated)
+            axios({
+                method: "post",
+                url: url,
+                withCredentials : true, 
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Credentials": true,
+                },
+                data: {
+                    id: uuid, // This is the body part
+                    time: time,
+                    text: comment,
+                    workspaceId : workspaceId
+                },
+            });
     };
 
     const selectComment = (id: string) => {
