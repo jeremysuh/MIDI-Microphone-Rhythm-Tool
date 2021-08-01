@@ -38,7 +38,7 @@ type Comment = {
     id: string;
     time: number[];
     text: string;
-    workspaceId : string;
+    workspaceId: string;
 };
 
 type WorkSpace = {
@@ -96,7 +96,7 @@ function MidiMicrophoneTool() {
         endTime: 0,
     });
 
-    //Initial Data Load
+    //User Auth
     useEffect(() => {
         const authenticate = async () => {
             const url =
@@ -131,6 +131,52 @@ function MidiMicrophoneTool() {
         };
         authenticate();
     }, []);
+
+    useEffect(() => {
+        const retrieveUserWorkspaces = async () => {
+            const url =
+                process.env.NODE_ENV === "production"
+                    ? "https://midi-rhythm-tool-server.herokuapp.com/api/userWorkspaces"
+                    : "http://localhost:8080/api/userWorkspaces";
+            if (authenticated)
+                axios({
+                    method: "get",
+                    url: url,
+                    withCredentials: true,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Credentials": true,
+                    },
+                })
+                    .then((res: AxiosResponse) => {
+                        const workspaces: any[] = res.data;
+                        console.log(workspaces);
+                        const newWorkspace = [];
+                        for (const workspace of workspaces) {
+                            const comments = workspace.comments.map((comment: any) => {
+                                return {
+                                    id: comment.id,
+                                    time: comment.time,
+                                    text: comment.text,
+                                    workspaceId: comment.workspaceId,
+                                };
+                            });
+                            newWorkspace.push({
+                                id: workspace.id,
+                                name: workspace.name,
+                                midiMetaData: workspace.midiMetaData,
+                                comments: comments,
+                            });
+                        }
+                        setAllWorkspaces(workspaces);
+                    })
+                    .catch((e: AxiosError) => {
+                        console.log(e.message);
+                    });
+        };
+
+        if (authenticated) retrieveUserWorkspaces();
+    }, [authenticated]);
 
     interface RecordingSession {
         time: number[];
@@ -393,7 +439,7 @@ function MidiMicrophoneTool() {
             axios({
                 method: "post",
                 url: url,
-                withCredentials : true, 
+                withCredentials: true,
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
@@ -401,7 +447,7 @@ function MidiMicrophoneTool() {
                 data: {
                     id: uuid, // This is the body part
                     name: `${fileName} Workspace`, // This is the body part
-                    midiMetaData: midiMetaData
+                    midiMetaData: midiMetaData,
                 },
             });
     };
@@ -433,7 +479,7 @@ function MidiMicrophoneTool() {
             id: uuid,
             time: time,
             text: comment,
-            workspaceId : newWorkspaces[index].id
+            workspaceId: newWorkspaces[index].id,
         });
         setAllWorkspaces(newWorkspaces);
 
@@ -447,7 +493,7 @@ function MidiMicrophoneTool() {
             axios({
                 method: "post",
                 url: url,
-                withCredentials : true, 
+                withCredentials: true,
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
@@ -456,7 +502,7 @@ function MidiMicrophoneTool() {
                     id: uuid, // This is the body part
                     time: time,
                     text: comment,
-                    workspaceId : workspaceId
+                    workspaceId: workspaceId,
                 },
             });
     };
