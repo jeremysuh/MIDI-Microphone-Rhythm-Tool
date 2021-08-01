@@ -357,20 +357,21 @@ function MidiMicrophoneTool() {
         }
 
         const uuid = uuidv4();
+        const midiMetaData = {
+            name: midiJSON.header.name,
+            ppq: midiJSON.header.ppq,
+            key: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].key : "N/A",
+            scale: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].scale : "N/A",
+            ticksCount: midiJSON.tracks[0].endOfTrackTicks ? midiJSON.tracks[0].endOfTrackTicks : 0,
+            tracksCount: midiJSON.tracks.length,
+            bpm: midiJSON.header.tempos[0] ? midiJSON.header.tempos[0].bpm : 0,
+        };
 
         const newWorkspace: WorkSpace = {
             id: uuid,
             name: `${fileName} Workspace`,
             comments: [],
-            midiMetaData: {
-                name: midiJSON.header.name,
-                ppq: midiJSON.header.ppq,
-                key: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].key : "N/A",
-                scale: midiJSON.header.keySignatures[0] ? midiJSON.header.keySignatures[0].scale : "N/A",
-                ticksCount: midiJSON.tracks[0].endOfTrackTicks ? midiJSON.tracks[0].endOfTrackTicks : 0,
-                tracksCount: midiJSON.tracks.length,
-                bpm: midiJSON.header.tempos[0] ? midiJSON.header.tempos[0].bpm : 0,
-            },
+            midiMetaData: midiMetaData,
         };
         console.log(newWorkspace);
         setCurrentWorkspace(newWorkspace);
@@ -380,6 +381,28 @@ function MidiMicrophoneTool() {
             return newVal;
         });
         setCanCreateWorkspace(false);
+
+        //save to backend
+        const url =
+            process.env.NODE_ENV === "production"
+                ? "https://midi-rhythm-tool-server.herokuapp.com/api/workspace"
+                : "http://localhost:8080/api/workspace";
+
+        if (authenticated)
+            axios({
+                method: "post",
+                url: url,
+                withCredentials : true, 
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Credentials": true,
+                },
+                data: {
+                    id: uuid, // This is the body part
+                    name: `${fileName} Workspace`, // This is the body part
+                    midiMetaData: midiMetaData
+                },
+            });
     };
 
     const deleteWorkSpace = (id: string) => {
