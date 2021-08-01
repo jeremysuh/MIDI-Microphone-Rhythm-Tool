@@ -534,14 +534,14 @@ function MidiMicrophoneTool() {
                 method: "delete",
                 data: {
                     id: commentId,
-                    workspaceId : workspaceId
+                    workspaceId: workspaceId,
                 },
                 url: url,
                 withCredentials: true,
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
-                }
+                },
             });
     };
 
@@ -561,6 +561,27 @@ function MidiMicrophoneTool() {
         newWorkspaces[workspaceIndex].comments = newComments;
 
         setAllWorkspaces(newWorkspaces);
+
+        const url =
+            process.env.NODE_ENV === "production"
+                ? "https://midi-rhythm-tool-server.herokuapp.com/api/comment"
+                : "http://localhost:8080/api/comment";
+
+        if (authenticated)
+            axios({
+                method: "patch",
+                data: {
+                    id: commentId,
+                    workspaceId: workspaceId,
+                    text: newText
+                },
+                url: url,
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Credentials": true,
+                },
+            });
     };
 
     const midiLoaded = midiUri !== null;
