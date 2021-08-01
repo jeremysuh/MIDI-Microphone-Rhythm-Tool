@@ -461,6 +461,25 @@ function MidiMicrophoneTool() {
 
         if (currentWorkspace && currentWorkspace.id === id) setCurrentWorkspace(null);
         setAllWorkspaces(newWorkspaces);
+
+        const url =
+            process.env.NODE_ENV === "production"
+                ? "https://midi-rhythm-tool-server.herokuapp.com/api/workspace"
+                : "http://localhost:8080/api/workspace";
+
+        if (authenticated)
+            axios({
+                method: "delete",
+                data: {
+                    id: id,
+                },
+                url: url,
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Credentials": true,
+                },
+            });
     };
 
     const changeWorkspaceTo = (id: string) => {
