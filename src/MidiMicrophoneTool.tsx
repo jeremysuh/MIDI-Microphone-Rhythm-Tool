@@ -11,6 +11,9 @@ import { WorkspaceDetails } from "./WorkspaceDetails";
 import { PreviewPanel } from "./PreviewPanel";
 import { MidiTrackPanel } from "./MidiTrackPanel";
 import { Navbar } from "./Navbar";
+import { AxiosError, AxiosResponse } from "axios";
+const axios = require("axios").default;
+require("dotenv").config();
 
 type MidiInformation = {
     totalLength: number;
@@ -60,7 +63,7 @@ function MidiMicrophoneTool() {
     const mediaStream = useRef<MediaStream | null>(null);
     const mediaRecorder = useRef<MediaRecorder | null>(null);
     const [hasMicrophoneAccess, setHasMicrophoneAccess] = useState<boolean>(false);
-    
+
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [isListening, setIsListening] = useState<boolean>(false);
 
@@ -79,6 +82,10 @@ function MidiMicrophoneTool() {
 
     const [fileName, setFileName] = useState<string | null>(null);
 
+    const [displayName, setDisplayName] = useState<string>("");
+    const [authenticated, setAuthenticated] = useState<boolean>(false);
+    const [initialLoad, setInitialLoad] = useState<boolean>(false);
+
     const [midiInformation, setMidiInformation] = useState<MidiInformation>({
         totalLength: 0,
     });
@@ -87,6 +94,42 @@ function MidiMicrophoneTool() {
         startTime: 0,
         endTime: 0,
     });
+
+    //Initial Data Load
+    useEffect(() => {
+        const authenticate = async () => {
+            const url =
+                process.env.NODE_ENV === "production"
+                    ? "https://midi-rhythm-tool-server.herokuapp.com/api/authenticate"
+                    : "http://localhost:8080/api/authenticate";
+            let config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Credentials": true,
+                },
+                withCredentials: true,
+            };
+            await axios
+                .get(url, config, { withCredentials: true })
+                .then((response: AxiosResponse) => {
+                    //logged in
+                    const name = response.data;
+                    console.log(name);
+                    if (name) {
+                        setAuthenticated(true);
+                        setDisplayName(name);
+                    }
+                    setInitialLoad(true);
+                })
+                .catch((error: AxiosError) => {
+                    //not logged in
+                    setAuthenticated(false);
+                    console.log(error.message);
+                    setInitialLoad(true);
+                });
+        };
+        authenticate();
+    }, []);
 
     interface RecordingSession {
         time: number[];
@@ -239,16 +282,17 @@ function MidiMicrophoneTool() {
         [isRecording, config, isListening]
     );
 
-    const startRecording = (listenModeOnly : boolean) => { //fix function args later
+    const startRecording = (listenModeOnly: boolean) => {
+        //fix function args later
         if (isRecording || mediaRecorder.current === null) return;
         console.log(mediaRecorder.current.state);
         player.current.skipToSeconds(config.startTime).play();
 
         if (listenModeOnly) setIsListening(true);
-        if (listenModeOnly === false)  mediaRecorder.current.start();
+        if (listenModeOnly === false) mediaRecorder.current.start();
     };
 
-    const stopRecording = (listenModeOnly : boolean) => {
+    const stopRecording = (listenModeOnly: boolean) => {
         if ((!isRecording && !isListening) || mediaRecorder.current === null) return;
 
         player.current.stop();
@@ -257,12 +301,12 @@ function MidiMicrophoneTool() {
         if (listenModeOnly) setIsListening(false);
 
         if (listenModeOnly === false) {
-        mediaRecorder.current.stop();
+            mediaRecorder.current.stop();
 
-        const newRecordingSessions = recordingSessions.slice();
-        if (newRecordingSessions.length > 0) newRecordingSessions.pop(); // adjust accordingly once multiple refs/audio at once is involved
-        newRecordingSessions.push({ time: [config.startTime, Math.round(pointer.current * 10) / 10] }); //right now, only one session max
-        setRecordingSession(newRecordingSessions);
+            const newRecordingSessions = recordingSessions.slice();
+            if (newRecordingSessions.length > 0) newRecordingSessions.pop(); // adjust accordingly once multiple refs/audio at once is involved
+            newRecordingSessions.push({ time: [config.startTime, Math.round(pointer.current * 10) / 10] }); //right now, only one session max
+            setRecordingSession(newRecordingSessions);
         }
     };
 
@@ -424,7 +468,7 @@ function MidiMicrophoneTool() {
 
     return (
         <div>
-            <Navbar />
+            <Navbar displayName={displayName} authenticated={authenticated} initialLoad={initialLoad} />
             <div className="App">
                 <MidiTrackPanel
                     soundFontLoaded={soundFontLoaded}
