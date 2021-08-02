@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import "./MidiMicrophoneTool.css";
 import Soundfont from "soundfont-player";
 import { Midi, MidiJSON } from "@tonejs/midi";
-import { v4 as uuidv4 } from "uuid";
 import * as MidiPlayerJS from "./midi-player-js/player";
 import { useAnimationFrame } from "./CustomHooks";
 import { WorkspacesList } from "./WorkspacesList";
@@ -12,6 +11,7 @@ import { PreviewPanel } from "./PreviewPanel";
 import { MidiTrackPanel } from "./MidiTrackPanel";
 import { Navbar } from "./Navbar";
 import { AxiosError, AxiosResponse } from "axios";
+const { v4: uuidv4 } = require("uuid");
 const axios = require("axios").default;
 require("dotenv").config();
 
