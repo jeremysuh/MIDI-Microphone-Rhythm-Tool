@@ -592,7 +592,7 @@ function MidiMicrophoneTool() {
                 data: {
                     id: commentId,
                     workspaceId: workspaceId,
-                    text: newText
+                    text: newText,
                 },
                 url: url,
                 withCredentials: true,
