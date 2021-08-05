@@ -11,6 +11,8 @@ import { PreviewPanel } from "./PreviewPanel";
 import { MidiTrackPanel } from "./MidiTrackPanel";
 import { Navbar } from "./Navbar";
 import { AxiosError, AxiosResponse } from "axios";
+import { createTheme } from "@material-ui/core/styles";
+import { ThemeProvider } from "@material-ui/core";
 const { v4: uuidv4 } = require("uuid");
 const axios = require("axios").default;
 require("dotenv").config();
@@ -47,6 +49,17 @@ type WorkSpace = {
     midiMetaData: MidiMetaData;
     comments: Comment[];
 };
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: "#4c516d",
+        },
+        secondary: {
+            main: `#5c6bc0`,
+        },
+    },
+}); 
 
 function MidiMicrophoneTool() {
     //const [midiArrayBuffer, setMidiArrayBuffer] = useState<ArrayBuffer | null>(null);
@@ -624,67 +637,69 @@ function MidiMicrophoneTool() {
 
     return (
         <div>
-            <Navbar displayName={displayName} authenticated={authenticated} initialLoad={initialLoad} />
-            <div className="App">
-                <MidiTrackPanel
-                    soundFontLoaded={soundFontLoaded}
-                    isRecording={isRecording}
-                    isPreviewPlaying={isPreviewPlaying}
-                    midiLoaded={midiLoaded}
-                    midiInformation={midiInformation}
-                    readMidiUri={readMidiUri}
-                    config={config}
-                    setConfig={setConfig}
-                    allowMicrophoneAccess={allowMicrophoneAccess}
-                    hasMicrophoneAccess={hasMicrophoneAccess}
-                    startRecording={startRecording}
-                    stopRecording={stopRecording}
-                    pointer={pointer}
-                    fileName={fileName}
-                    midiJSON={midiJSON}
-                    selectedComment={selectedComment}
-                    isListening={isListening}
-                />
-                <br />
-                {recordingSessions.map((session, index) => {
-                    //adjust when multiple sessions involved (including audio refs)
-                    return (
-                        <PreviewPanel
-                            key={index}
-                            playPreview={playPreview}
-                            pausePreview={pausePreview}
-                            stopPreview={stopPreview}
-                            disablePreview={disablePreview}
-                            audioSrc={audioSrc}
-                            isRecording={isRecording}
-                            audioRef={audioRef}
-                            currentWorkspace={currentWorkspace}
-                            timeRange={session.time}
-                            midiInformation={midiInformation}
-                            addCommentToWorkspace={addCommentToWorkspace}
-                            seekPreview={seekPreview}
-                        />
-                    );
-                })}
+            <ThemeProvider theme={theme}>
+                <Navbar displayName={displayName} authenticated={authenticated} initialLoad={initialLoad} />
+                <div className="App">
+                    <MidiTrackPanel
+                        soundFontLoaded={soundFontLoaded}
+                        isRecording={isRecording}
+                        isPreviewPlaying={isPreviewPlaying}
+                        midiLoaded={midiLoaded}
+                        midiInformation={midiInformation}
+                        readMidiUri={readMidiUri}
+                        config={config}
+                        setConfig={setConfig}
+                        allowMicrophoneAccess={allowMicrophoneAccess}
+                        hasMicrophoneAccess={hasMicrophoneAccess}
+                        startRecording={startRecording}
+                        stopRecording={stopRecording}
+                        pointer={pointer}
+                        fileName={fileName}
+                        midiJSON={midiJSON}
+                        selectedComment={selectedComment}
+                        isListening={isListening}
+                    />
+                    <br />
+                    {recordingSessions.map((session, index) => {
+                        //adjust when multiple sessions involved (including audio refs)
+                        return (
+                            <PreviewPanel
+                                key={index}
+                                playPreview={playPreview}
+                                pausePreview={pausePreview}
+                                stopPreview={stopPreview}
+                                disablePreview={disablePreview}
+                                audioSrc={audioSrc}
+                                isRecording={isRecording}
+                                audioRef={audioRef}
+                                currentWorkspace={currentWorkspace}
+                                timeRange={session.time}
+                                midiInformation={midiInformation}
+                                addCommentToWorkspace={addCommentToWorkspace}
+                                seekPreview={seekPreview}
+                            />
+                        );
+                    })}
 
-                <WorkspaceDetails
-                    currentWorkspace={currentWorkspace}
-                    onCreateWorkspace={onCreateWorkspace}
-                    canCreateWorkspace={canCreateWorkspace}
-                    addCommentToWorkspace={addCommentToWorkspace}
-                    selectComment={selectComment}
-                    editComment={editComment}
-                    deleteComment={deleteComment}
-                    selectedComment={selectedComment}
-                    config={config}
-                />
-                <WorkspacesList
-                    changeWorkspaceTo={changeWorkspaceTo}
-                    allWorkspaces={allWorkspaces}
-                    loadedMidiMetaData={loadedMidiMetaData}
-                    deleteWorkSpace={deleteWorkSpace}
-                />
-            </div>
+                    <WorkspaceDetails
+                        currentWorkspace={currentWorkspace}
+                        onCreateWorkspace={onCreateWorkspace}
+                        canCreateWorkspace={canCreateWorkspace}
+                        addCommentToWorkspace={addCommentToWorkspace}
+                        selectComment={selectComment}
+                        editComment={editComment}
+                        deleteComment={deleteComment}
+                        selectedComment={selectedComment}
+                        config={config}
+                    />
+                    <WorkspacesList
+                        changeWorkspaceTo={changeWorkspaceTo}
+                        allWorkspaces={allWorkspaces}
+                        loadedMidiMetaData={loadedMidiMetaData}
+                        deleteWorkSpace={deleteWorkSpace}
+                    />
+                </div>
+            </ThemeProvider>
         </div>
     );
 }

@@ -1,6 +1,14 @@
 .App {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.background-pattern {
+    background-color: #111111;
+    opacity: 0.9;
+    background-image: radial-gradient(circle at center center, #aeaeae, #111111),
+        repeating-radial-gradient(circle at center center, #aeaeae, #aeaeae, 16px, transparent 32px, transparent 16px);
+    background-blend-mode: multiply;
 }
