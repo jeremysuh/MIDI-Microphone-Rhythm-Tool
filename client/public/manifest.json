@@ -1,6 +1,6 @@
 {
   "short_name": "React App",
-  "name": "Midi & Microphone Rhythm Tool",
+  "name": "Midi Rhythm Tool",
   "icons": [
     {
       "src": "midi.ico",
@@ -11,7 +11,7 @@
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192"
-    },
+    }, 
     {
       "src": "logo512.png",
       "type": "image/png",
