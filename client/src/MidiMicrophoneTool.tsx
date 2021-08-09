@@ -114,7 +114,7 @@ function MidiMicrophoneTool() {
         const authenticate = async () => {
             const url =
                 process.env.NODE_ENV === "production"
-                    ? "https://midi-rhythm-tool-server.herokuapp.com/api/authenticate"
+                    ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/authenticate`
                     : "http://localhost:8080/api/authenticate";
             let config = {
                 headers: {
@@ -149,7 +149,7 @@ function MidiMicrophoneTool() {
         const retrieveUserWorkspaces = async () => {
             const url =
                 process.env.NODE_ENV === "production"
-                    ? "https://midi-rhythm-tool-server.herokuapp.com/api/userWorkspaces"
+                    ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/userWorkspaces`
                     : "http://localhost:8080/api/userWorkspaces";
             if (authenticated)
                 axios({
@@ -445,7 +445,7 @@ function MidiMicrophoneTool() {
         //save to backend
         const url =
             process.env.NODE_ENV === "production"
-                ? "https://midi-rhythm-tool-server.herokuapp.com/api/workspace"
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/workspace`
                 : "http://localhost:8080/api/workspace";
 
         if (authenticated)
@@ -477,7 +477,7 @@ function MidiMicrophoneTool() {
 
         const url =
             process.env.NODE_ENV === "production"
-                ? "https://midi-rhythm-tool-server.herokuapp.com/api/workspace"
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}api/workspace`
                 : "http://localhost:8080/api/workspace";
 
         if (authenticated)
@@ -518,7 +518,7 @@ function MidiMicrophoneTool() {
         //save to backend
         const url =
             process.env.NODE_ENV === "production"
-                ? "https://midi-rhythm-tool-server.herokuapp.com/api/comment"
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/comment`
                 : "http://localhost:8080/api/comment";
 
         if (authenticated)
@@ -558,7 +558,7 @@ function MidiMicrophoneTool() {
 
         const url =
             process.env.NODE_ENV === "production"
-                ? "https://midi-rhythm-tool-server.herokuapp.com/api/comment"
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/comment`
                 : "http://localhost:8080/api/comment";
 
         if (authenticated)
@@ -596,7 +596,7 @@ function MidiMicrophoneTool() {
 
         const url =
             process.env.NODE_ENV === "production"
-                ? "https://midi-rhythm-tool-server.herokuapp.com/api/comment"
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/comment`
                 : "http://localhost:8080/api/comment";
 
         if (authenticated)

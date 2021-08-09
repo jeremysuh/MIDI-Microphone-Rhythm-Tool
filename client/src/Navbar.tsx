@@ -29,7 +29,7 @@ const Navbar = ({authenticated, displayName, initialLoad} : NavbarProps) => {
     const onSignInClick = () => {
         window.open(
             process.env.NODE_ENV === "production"
-                ? "https://midi-rhythm-tool-server.herokuapp.com/api/auth/google"
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/auth/google`
                 : "http://localhost:8080/api/auth/google",
             "_self"
         );
@@ -38,7 +38,7 @@ const Navbar = ({authenticated, displayName, initialLoad} : NavbarProps) => {
     const onSignOutClick = () => {
         window.open(
             process.env.NODE_ENV === "production"
-                ? "https://midi-rhythm-tool-server.herokuapp.com/api/logout"
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/logout`
                 : "http://localhost:8080/api/logout",
             "_self"
         );
