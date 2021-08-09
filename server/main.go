@@ -125,9 +125,9 @@ func main() {
 		callbackUrl = os.Getenv("PRODUCTION_SERVER_URL") + "/api/auth/google/callback"
 	}
 
-	clientUrl := "http://localhost:3000/"
+	clientUrl := "http://localhost:3000"
 	if os.Getenv("APP_ENV") == "production" {
-		clientUrl = os.Getenv("PRODUCTION_CLIENT_URL") + "/"
+		clientUrl = os.Getenv("PRODUCTION_CLIENT_URL")
 	}
 
 	googleProvider := google.New(os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET"), callbackUrl, "email", "profile")
