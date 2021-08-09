@@ -477,7 +477,7 @@ function MidiMicrophoneTool() {
 
         const url =
             process.env.NODE_ENV === "production"
-                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}api/workspace`
+                ? `${process.env.REACT_APP_PRODUCTION_SERVER_URL}/api/workspace`
                 : "http://localhost:8080/api/workspace";
 
         if (authenticated)
