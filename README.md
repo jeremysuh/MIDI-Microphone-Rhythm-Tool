@@ -4,7 +4,7 @@ Web tool to practice instrument play alongside a MIDI file using their device mi
 
 Users can record themselves playing alongside selected sections of a MIDI file. After recording, a playback of both the MIDI and microphone recording can be used to determine any mistakes and/or improvements needed. 
 
-midi-and-microphone-rhythm-practice.netlify.app/
+Live Demo URL: https://midi-and-microphone-rhythm-practice.netlify.app/
 
 ![home page](./screenshots/screenshot-1.png)
 
