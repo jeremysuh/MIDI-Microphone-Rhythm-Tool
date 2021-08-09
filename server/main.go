@@ -122,12 +122,12 @@ func main() {
 
 	callbackUrl := "http://localhost:8080/api/auth/google/callback"
 	if os.Getenv("APP_ENV") == "production" {
-		callbackUrl = "https://midi-rhythm-tool-server.herokuapp.com/api/auth/google/callback"
+		callbackUrl = os.Getenv("PRODUCTION_SERVER_URL") + "/api/auth/google/callback"
 	}
 
 	clientUrl := "http://localhost:3000/"
 	if os.Getenv("APP_ENV") == "production" {
-		clientUrl = "https://midi-and-microphone-rhythm-practice.netlify.app/"
+		clientUrl = os.Getenv("PRODUCTION_CLIENT_URL") + "/"
 	}
 
 	googleProvider := google.New(os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET"), callbackUrl, "email", "profile")
@@ -176,7 +176,7 @@ func main() {
 	//gin
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://midi-and-microphone-rhythm-practice.netlify.app"},
+		AllowOrigins:     []string{"http://localhost:3000", os.Getenv("PRODUCTION_CLIENT_URL")},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"},
 		AllowHeaders:     []string{"Access-Control-Allow-Credentials", "Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
