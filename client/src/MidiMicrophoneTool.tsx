@@ -120,6 +120,7 @@ function MidiMicrophoneTool() {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
+                    'Access-Control-Allow-Origin': true
                 },
                 withCredentials: true,
             };
@@ -159,6 +160,7 @@ function MidiMicrophoneTool() {
                     headers: {
                         "Content-Type": "application/json",
                         "Access-Control-Allow-Credentials": true,
+                        'Access-Control-Allow-Origin': true,
                     },
                 })
                     .then((res: AxiosResponse) => {
@@ -456,6 +458,7 @@ function MidiMicrophoneTool() {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
+                    'Access-Control-Allow-Origin': true,
                 },
                 data: {
                     id: uuid, // This is the body part
@@ -491,6 +494,7 @@ function MidiMicrophoneTool() {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
+                    'Access-Control-Allow-Origin': true,
                 },
             });
     };
@@ -529,6 +533,7 @@ function MidiMicrophoneTool() {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
+                    'Access-Control-Allow-Origin': true,
                 },
                 data: {
                     id: uuid, // This is the body part
@@ -573,6 +578,7 @@ function MidiMicrophoneTool() {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
+                    'Access-Control-Allow-Origin': true
                 },
             });
     };
@@ -612,6 +618,7 @@ function MidiMicrophoneTool() {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Credentials": true,
+                    'Access-Control-Allow-Origin': true
                 },
             });
     };
